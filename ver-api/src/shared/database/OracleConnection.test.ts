@@ -1,5 +1,5 @@
 import { OracleConnection } from './OracleConnection';
-import * as oracledb from 'oracledb';
+import oracledb from 'oracledb';
 
 // Mock oracledb
 jest.mock('oracledb', () => ({
