@@ -1,7 +1,7 @@
-import * as oracledb from 'oracledb';
+import oracledb from 'oracledb';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: '.env.db' });
 
 export class OracleConnection {
     private static instance: OracleConnection;
@@ -22,6 +22,16 @@ export class OracleConnection {
         }
 
         try {
+            try {
+                oracledb.initOracleClient();
+            } catch (err: any) {
+                if (err.message.includes('DPI-1047')) {
+                    console.error('Error initializing Thick Mode: Oracle Client libraries not found in PATH.', err.message);
+                } else if (err.message.includes('NJS-009')) {
+                } else {
+                    console.error('Error initializing Thick Mode:', err);
+                }
+            }
 
             const user = process.env.ORACLE_USER;
             const password = process.env.ORACLE_PASSWORD;
@@ -39,7 +49,7 @@ export class OracleConnection {
         }
     }
 
-    public async execute<T>(sql: string, binds: any[] = [], options: oracledb.ExecuteOptions = {}): Promise<oracledb.Result<T>> {
+    public async execute<T>(sql: string, binds: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}): Promise<oracledb.Result<T>> {
         if (!this.pool) {
             await this.initialize();
         }

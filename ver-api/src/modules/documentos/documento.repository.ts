@@ -1,14 +1,13 @@
-import { oraclePool } from '../../shared/database/oracle';
+import { OracleConnection } from '../../shared/database/OracleConnection';
 
 export class DocumentoRepository {
+  private db = OracleConnection.getInstance();
+
   async create(atendimentoId: number, tipo: string) {
-    const conn = await oraclePool.getConnection();
-    await conn.execute(
-      `INSERT INTO documentos (atendimento_id, tipo, status, criado_em)
-       VALUES (:atendimentoId, :tipo, 'RASCUNHO', SYSDATE)`,
-      { atendimentoId, tipo },
-      { autoCommit: true }
-    );
-    await conn.close();
+    const query = `
+      INSERT INTO documentos (atendimento_id, tipo, status, criado_em)
+      VALUES (:atendimentoId, :tipo, 'RASCUNHO', SYSDATE)
+    `;
+    await this.db.execute(query, { atendimentoId, tipo }, { autoCommit: true });
   }
 }

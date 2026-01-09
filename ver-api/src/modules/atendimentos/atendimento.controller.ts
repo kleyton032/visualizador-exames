@@ -7,6 +7,9 @@ export class AtendimentoController {
   getToday = async (req: Request, res: Response) => {
     const { nm_paciente, cd_paciente } = req.query;
 
+    console.log('--- Debug Controller ---');
+    console.log('Query Params:', req.query);
+
     const appointments = await this.service.getTodayAppointments(
       nm_paciente as string,
       cd_paciente ? Number(cd_paciente) : undefined
