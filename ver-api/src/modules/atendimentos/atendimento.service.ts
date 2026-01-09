@@ -2,7 +2,8 @@ import { AtendimentoRepository } from './atendimento.repository';
 
 export class AtendimentoService {
   private repo = new AtendimentoRepository();
-  async create(pacienteId: number) {
-    await this.repo.create(pacienteId);
+
+  async getTodayAppointments(nmPaciente?: string, cdPaciente?: number) {
+    return this.repo.findByPatientToday({ nm_paciente: nmPaciente, cd_paciente: cdPaciente });
   }
 }

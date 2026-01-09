@@ -3,8 +3,15 @@ import { AtendimentoService } from './atendimento.service';
 
 export class AtendimentoController {
   private service = new AtendimentoService();
-  create = async (req: Request, res: Response) => {
-    await this.service.create(req.body.pacienteId);
-    res.status(201).send();
+
+  getToday = async (req: Request, res: Response) => {
+    const { nm_paciente, cd_paciente } = req.query;
+
+    const appointments = await this.service.getTodayAppointments(
+      nm_paciente as string,
+      cd_paciente ? Number(cd_paciente) : undefined
+    );
+
+    res.json(appointments);
   };
 }
