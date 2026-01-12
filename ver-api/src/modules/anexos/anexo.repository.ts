@@ -38,4 +38,10 @@ export class AnexoRepository {
     }, { autoCommit: true });
   }
 
+  async getExameById(id: number) {
+    const query = `SELECT nome_exame FROM exames WHERE id = :id`;
+    const result = await this.db.execute<{ NOME_EXAME: string }>(query, { id });
+    return result.rows?.[0];
+  }
+
 }

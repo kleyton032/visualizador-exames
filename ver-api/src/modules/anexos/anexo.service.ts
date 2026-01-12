@@ -18,10 +18,13 @@ export class AnexoService {
     observacoes: string;
     status: string;
   }) {
+    const examen = await this.repo.getExameById(data.id_exame);
+    const nomeExame = examen ? (examen as any).NOME_EXAME : data.id_exame;
+
     const baseDir = '\\\\192.168.4.18\\C$\\anexos_exames';
     const extension = path.extname(file.originalname);
     const targetDir = path.join(baseDir, data.cd_paciente.toString());
-    const filename = `${data.cd_paciente}-${data.cd_atendimento}-${data.id_exame}-${data.data}${extension}`;
+    const filename = `${data.cd_paciente}-${data.cd_atendimento}-${nomeExame}-${data.data}${extension}`;
     const targetPath = path.join(targetDir, filename);
 
 
