@@ -1,0 +1,1 @@
+src/modules/atendimentos/pages/AtendimentoList/AtendimentoList.tsx(1,38): error TS1484: 'ChangeEvent' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
