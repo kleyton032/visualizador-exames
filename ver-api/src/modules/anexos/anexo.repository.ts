@@ -6,7 +6,7 @@ export interface AnexoExameData {
   id_exame: number;
   observacoes: string;
   olho: string;
-  data: string;
+  data: Date;
   caminho_anexo: string;
   statusdoc: string;
 }
@@ -23,7 +23,7 @@ export class AnexoRepository {
   async saveAnexoExame(data: AnexoExameData) {
     const query = `
       INSERT INTO anexos_exames (id, prontuario, atendimento, procedimento, observacoes, olho, caminho_anexo, statusdoc, data)
-      VALUES (seq_anexos_exames.NEXTVAL, :cd_paciente, :cd_atendimento, :id_exame, :observacoes, :olho, :caminho_anexo, :statusdoc, TO_DATE(:data, 'YYYYMMDD'))
+      VALUES (seq_anexos_exames.NEXTVAL, :cd_paciente, :cd_atendimento, :id_exame, :observacoes, :olho, :caminho_anexo, :statusdoc, :data)
     `;
 
     await this.db.execute(query, {
