@@ -1,27 +1,33 @@
 import React, { useEffect, useState, type ChangeEvent } from 'react';
 import { Table, Input, Card, Space, Typography, Layout, theme, Button, message } from 'antd';
-import { SearchOutlined, UserOutlined, NumberOutlined, ReloadOutlined, UploadOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, NumberOutlined, ReloadOutlined } from '@ant-design/icons';
 import { PacienteService } from '../../services/paciente.service';
 import type { Paciente } from '../../types/paciente.types';
-import type { Atendimento } from '../../../atendimentos/types/atendimento.types';
-import AnexoUploadModal from '../../../anexos/components/AnexoUploadModal/AnexoUploadModal';
 
 const { Title } = Typography;
 const { Content } = Layout;
 
-const PacienteList: React.FC = () => {
-    const { token } = theme.useToken();
-    const [loading, setLoading] = useState(false);
-    const [data, setData] = useState<Paciente[]>([]);
-    const [filters, setFilters] = useState({
-        cd_paciente: '',
-        nm_paciente: ''
-    });
-    const [hasSearched, setHasSearched] = useState(false);
+interface PacienteListProps {
+    onVerAtendimentos: (cdPaciente: number) => void;
+    data: Paciente[];
+    setData: (data: Paciente[]) => void;
+    filters: { cd_paciente: string; nm_paciente: string };
+    setFilters: (filters: { cd_paciente: string; nm_paciente: string } | ((prev: any) => any)) => void;
+    hasSearched: boolean;
+    setHasSearched: (hasSearched: boolean) => void;
+}
 
-    // Modal State
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(null);
+const PacienteList: React.FC<PacienteListProps> = ({
+    onVerAtendimentos,
+    data,
+    setData,
+    filters,
+    setFilters,
+    hasSearched,
+    setHasSearched
+}) => {
+    const { token } = theme.useToken();
+    const [loading, setLoading] = useState(false); // Mantemos o loading local
 
     const loadData = async () => {
         if (!filters.cd_paciente && !filters.nm_paciente) {
@@ -44,11 +50,6 @@ const PacienteList: React.FC = () => {
     useEffect(() => {
         // No auto-load
     }, []);
-
-    const openUploadModal = (paciente: Paciente) => {
-        setSelectedPaciente(paciente);
-        setIsModalVisible(true);
-    };
 
     const columns = [
         {
@@ -75,17 +76,17 @@ const PacienteList: React.FC = () => {
             render: (_: any, record: Paciente) => (
                 <Button
                     type="link"
-                    icon={<UploadOutlined />}
-                    onClick={() => openUploadModal(record)}
+                    icon={<SearchOutlined />}
+                    onClick={() => onVerAtendimentos(record.CD_PACIENTE)}
                 >
-                    Anexo
+                    Atendimentos
                 </Button>
             )
         }
     ];
 
     const handleFilterChange = (key: string, value: string) => {
-        setFilters(prev => ({ ...prev, [key]: value }));
+        setFilters((prev: any) => ({ ...prev, [key]: value }));
     };
 
     return (
@@ -150,12 +151,6 @@ const PacienteList: React.FC = () => {
                     )}
                 </Space>
             </Content>
-
-            <AnexoUploadModal
-                visible={isModalVisible}
-                onClose={() => setIsModalVisible(false)}
-                atendimento={selectedPaciente ? { CD_PACIENTE: selectedPaciente.CD_PACIENTE, CD_ATENDIMENTO: 0 } as Atendimento : null}
-            />
         </Layout>
     );
 };
