@@ -4,18 +4,24 @@ import path from 'path';
 
 export class AnexoService {
   private repo = new AnexoRepository();
+
+  constructor() {
+    this.repo = new AnexoRepository();
+  }
+
   async upload(file: Express.Multer.File, data: {
     cd_paciente: number;
     cd_atendimento: number;
     id_exame: number;
-    data: string;
+    data: string | Date;
     olho: string;
     observacoes: string;
     status: string;
   }) {
     const baseDir = '\\\\192.168.4.18\\C$\\anexos_exames';
+    const extension = path.extname(file.originalname);
     const targetDir = path.join(baseDir, data.cd_paciente.toString());
-    const filename = `${data.cd_paciente}-${data.cd_atendimento}-${data.id_exame}-${data.data}.pdf`;
+    const filename = `${data.cd_paciente}-${data.cd_atendimento}-${data.id_exame}-${data.data}${extension}`;
     const targetPath = path.join(targetDir, filename);
 
 
@@ -31,7 +37,7 @@ export class AnexoService {
       id_exame: data.id_exame,
       observacoes: data.observacoes,
       olho: data.olho,
-      data: data.data,
+      data: new Date(),
       caminho_anexo: targetPath,
       statusdoc: data.status
     });
