@@ -18,16 +18,25 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
     const [form] = Form.useForm();
     const [exames, setExames] = useState<Exame[]>([]);
     const [fileList, setFileList] = useState<UploadFile[]>([]);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         if (visible) {
             loadExames();
         } else {
+            cleanup();
             form.resetFields();
-            setFileList([]);
         }
     }, [visible]);
+
+    const cleanup = () => {
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            setPreviewUrl(null);
+        }
+        setFileList([]);
+    };
 
     const loadExames = async () => {
         try {
@@ -80,6 +89,8 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
         }
     };
 
+    const isPdf = fileList[0]?.type === 'application/pdf' || fileList[0]?.name?.toLowerCase().endsWith('.pdf');
+
     return (
         <Modal
             title={`Upload de Anexo - Paciente ${atendimento?.CD_PACIENTE}`}
@@ -89,66 +100,128 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
             confirmLoading={submitting}
             okText="Enviar"
             cancelText="Cancelar"
-            width={600}
+            width="80%"
+            style={{ top: 20 }}
+            bodyStyle={{ height: 'calc(100vh - 200px)', padding: 0 }}
+            destroyOnClose
         >
-            <Form
-                form={form}
-                layout="vertical"
-                initialValues={{ olho: 'AO' }}
-            >
-                <Form.Item
-                    name="id_exame"
-                    label="Tipo de Exame"
-                    rules={[{ required: true, message: 'Selecione o tipo de exame' }]}
-                >
-                    <Select
-                        placeholder="Selecione o exame"
-                        showSearch
-                        filterOption={(input, option) =>
-                            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                        }
-                        options={exames.map(ex => ({ label: ex.nome_exame, value: ex.id }))}
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    name="olho"
-                    label="Lado (Olho)"
-                    rules={[{ required: true, message: 'Selecione o olho' }]}
-                >
-                    <Select options={[
-                        { label: 'Direito (OD)', value: 'OD' },
-                        { label: 'Esquerdo (OE)', value: 'OE' },
-                        { label: 'Ambos (AO)', value: 'AO' }
-                    ]} />
-                </Form.Item>
-
-                <Form.Item
-                    name="observacoes"
-                    label="Observações"
-                >
-                    <Input.TextArea rows={3} placeholder="Dê detalhes sobre o exame, se necessário" />
-                </Form.Item>
-
-                <Form.Item label="Arquivo">
-                    <Upload
-                        onRemove={() => setFileList([])}
-                        beforeUpload={(file) => {
-                            setFileList([file]);
-                            return false; // Prevent auto-upload
-                        }}
-                        fileList={fileList}
-                        maxCount={1}
-                        accept=".pdf,.jpg,.jpeg,.png"
+            <div style={{ display: 'flex', height: '100%' }}>
+                {/* Lado Esquerdo: Formulário */}
+                <div style={{
+                    width: '350px',
+                    padding: '24px',
+                    borderRight: '1px solid #f0f0f0',
+                    overflowY: 'auto'
+                }}>
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        initialValues={{ olho: 'AO' }}
                     >
-                        <Button icon={<UploadOutlined />}>Selecionar Arquivo</Button>
-                    </Upload>
-                    <Space style={{ marginTop: 8, color: '#888' }}>
-                        <InfoCircleOutlined />
-                        <span>Formatos aceitos: PDF, JPG, PNG e JPEG</span>
-                    </Space>
-                </Form.Item>
-            </Form>
+                        <Form.Item
+                            name="id_exame"
+                            label="Tipo de Exame"
+                            rules={[{ required: true, message: 'Selecione o tipo de exame' }]}
+                        >
+                            <Select
+                                placeholder="Selecione o exame"
+                                showSearch
+                                filterOption={(input, option) =>
+                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                }
+                                options={exames.map(ex => ({ label: ex.nome_exame, value: ex.id }))}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="olho"
+                            label="Lado (Olho)"
+                            rules={[{ required: true, message: 'Selecione o olho' }]}
+                        >
+                            <Select options={[
+                                { label: 'Direito (OD)', value: 'OD' },
+                                { label: 'Esquerdo (OE)', value: 'OE' },
+                                { label: 'Ambos (AO)', value: 'AO' }
+                            ]} />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="observacoes"
+                            label="Observações"
+                        >
+                            <Input.TextArea rows={3} placeholder="Dê detalhes sobre o exame, se necessário" />
+                        </Form.Item>
+
+                        <Form.Item label="Arquivo" required>
+                            <Upload
+                                onRemove={() => cleanup()}
+                                beforeUpload={(file) => {
+                                    cleanup();
+                                    const url = URL.createObjectURL(file);
+                                    setPreviewUrl(url);
+                                    setFileList([file]);
+                                    return false; // Prevent auto-upload
+                                }}
+                                fileList={fileList}
+                                maxCount={1}
+                                accept=".pdf,.jpg,.jpeg,.png"
+                            >
+                                <Button icon={<UploadOutlined />} block>Selecionar Arquivo</Button>
+                            </Upload>
+                            <Space style={{ marginTop: 8, color: '#888', fontSize: '12px' }}>
+                                <InfoCircleOutlined />
+                                <span>PDF, JPG, PNG e JPEG</span>
+                            </Space>
+                        </Form.Item>
+                    </Form>
+                </div>
+
+                {/* Lado Direito: Preview */}
+                <div style={{ flex: 1, background: '#f5f5f5', position: 'relative' }}>
+                    {previewUrl ? (
+                        isPdf ? (
+                            <iframe
+                                src={previewUrl}
+                                title="Preview Upload"
+                                width="100%"
+                                height="100%"
+                                style={{ border: 'none' }}
+                            />
+                        ) : (
+                            <div style={{
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '20px'
+                            }}>
+                                <img
+                                    src={previewUrl}
+                                    alt="Preview"
+                                    style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '100%',
+                                        objectFit: 'contain',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                    }}
+                                />
+                            </div>
+                        )
+                    ) : (
+                        <div style={{
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#bfbfbf'
+                        }}>
+                            <UploadOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
+                            <p>Selecione um arquivo para ver a prévia aqui</p>
+                        </div>
+                    )}
+                </div>
+            </div>
         </Modal>
     );
 };

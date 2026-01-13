@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AnexoUploadModal from './AnexoUploadModal';
 import { AnexoService } from '../../services/anexo.service';
@@ -70,5 +70,25 @@ describe('AnexoUploadModal', () => {
         cancelButton.click();
 
         expect(defaultProps.onClose).toHaveBeenCalled();
+    });
+
+    it('shows preview when a file is selected', async () => {
+        vi.mocked(AnexoService.listExames).mockResolvedValue([]);
+        const createSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
+
+        render(<AnexoUploadModal {...defaultProps} />);
+
+        const file = new File(['test'], 'test.pdf', { type: 'application/pdf' });
+
+        const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+        fireEvent.change(input, { target: { files: [file] } });
+
+        await waitFor(() => {
+            expect(screen.getByTitle('Preview Upload')).toBeInTheDocument();
+            expect(screen.getByTitle('Preview Upload')).toHaveAttribute('src', 'blob:test');
+        });
+
+        createSpy.mockRestore();
     });
 });
