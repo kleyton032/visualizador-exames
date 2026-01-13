@@ -1,0 +1,221 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.17 [39m[90mC:/Users/kleyton.bomfim/Desktop/V.E.R - NOVO/ver-frontend[39m
+
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+[90mstderr[2m | src/modules/anexos/components/AnexoUploadModal/AnexoUploadModal.test.tsx[2m > [22m[2mAnexoUploadModal[2m > [22m[2mrenders correctly when open
+[22m[39mWarning: [antd: Modal] `bodyStyle` is deprecated. Please use `styles.body` instead.
+Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.
+Warning: bodyStyle is deprecated, please use styles instead.
+
+[90mstderr[2m | src/modules/anexos/components/AnexoUploadModal/AnexoUploadModal.test.tsx[2m > [22m[2mAnexoUploadModal[2m > [22m[2mrenders correctly when open
+[22m[39mAn update to AnexoUploadModal inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+[90mstderr[2m | src/modules/anexos/components/AnexoUploadModal/AnexoUploadModal.test.tsx[2m > [22m[2mAnexoUploadModal[2m > [22m[2mloads exams on open
+[22m[39mWarning: [antd: Modal] `bodyStyle` is deprecated. Please use `styles.body` instead.
+Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.
+Warning: bodyStyle is deprecated, please use styles instead.
+
+[90mstderr[2m | src/modules/anexos/components/AnexoUploadModal/AnexoUploadModal.test.tsx[2m > [22m[2mAnexoUploadModal[2m > [22m[2mloads exams on open
+[22m[39mWarning: [antd: Modal] `bodyStyle` is deprecated. Please use `styles.body` instead.
+Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.
+Warning: bodyStyle is deprecated, please use styles instead.
+
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+[90mstderr[2m | src/modules/anexos/components/AnexoUploadModal/AnexoUploadModal.test.tsx[2m > [22m[2mAnexoUploadModal[2m > [22m[2mcalls onClose when clicking cancel
+[22m[39mWarning: [antd: Modal] `bodyStyle` is deprecated. Please use `styles.body` instead.
+Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.
+Warning: bodyStyle is deprecated, please use styles instead.
+
+[90mstderr[2m | src/modules/anexos/components/AnexoUploadModal/AnexoUploadModal.test.tsx[2m > [22m[2mAnexoUploadModal[2m > [22m[2mcalls onClose when clicking cancel
+[22m[39mAn update to AnexoUploadModal inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+[90mstderr[2m | src/modules/anexos/components/AnexoUploadModal/AnexoUploadModal.test.tsx[2m > [22m[2mAnexoUploadModal[2m > [22m[2mshows preview when a file is selected
+[22m[39mWarning: [antd: Modal] `bodyStyle` is deprecated. Please use `styles.body` instead.
+Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.
+Warning: bodyStyle is deprecated, please use styles instead.
+
+[90mstderr[2m | src/modules/anexos/components/AnexoUploadModal/AnexoUploadModal.test.tsx[2m > [22m[2mAnexoUploadModal[2m > [22m[2mshows preview when a file is selected
+[22m[39mAn update to AnexoUploadModal inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [31m❯[39m src/modules/anexos/components/AnexoUploadModal/AnexoUploadModal.test.tsx [2m([22m[2m4 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1352[2mms[22m[39m
+     [33m[2m✓[22m[39m renders correctly when open [33m 888[2mms[22m[39m
+     [32m✓[39m loads exams on open[32m 178[2mms[22m[39m
+     [32m✓[39m calls onClose when clicking cancel[32m 143[2mms[22m[39m
+[31m     [31m×[31m shows preview when a file is selected[39m[32m 141[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/anexos/components/AnexoUploadModal/AnexoUploadModal.test.tsx[2m > [22mAnexoUploadModal[2m > [22mshows preview when a file is selected
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find a label with the text of: Selecionar Arquivo
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"ant-modal-root css-dev-only-do-not-override-iecf5o css-var-root ant-modal-css-var"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"ant-modal-mask ant-modal-mask-blur"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"ant-modal-wrap"[39m
+        [33mtabindex[39m=[32m"-1"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33maria-labelledby[39m=[32m"test-id"[39m
+          [33maria-modal[39m=[32m"true"[39m
+          [33mclass[39m=[32m"ant-modal css-dev-only-do-not-override-iecf5o ant-zoom-appear ant-zoom-appear-prepare ant-zoom"[39m
+          [33mrole[39m=[32m"dialog"[39m
+          [33mstyle[39m=[32m"top: 20px; width: 80%;"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mstyle[39m=[32m"outline: none;"[39m
+            [33mtabindex[39m=[32m"0"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"ant-modal-container"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-label[39m=[32m"Close"[39m
+                [33mclass[39m=[32m"ant-modal-close"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33maria-label[39m=[32m"Close"[39m
+                  [33mclass[39m=[32m"ant-modal-close-x"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-label[39m=[32m"close"[39m
+                    [33mclass[39m=[32m"anticon anticon-close ant-modal-close-icon"[39m
+                    [33mrole[39m=[32m"img"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mdata-icon[39m=[32m"close"[39m
+                      [33mfill[39m=[32m"currentColor"[39m
+                      [33mfill-rule[39m=[32m"evenodd"[39m
+                      [33mfocusable[39m=[32m"false"[39m
+                      [33mheight[39m=[32m"1em"[39m
+                      [33mviewBox[39m=[32m"64 64 896 896"[39m
+                      [33mwidth[39m=[32m"1em"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</span>[39m
+                [36m</span>[39m
+              [36m</button>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"ant-modal-header"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"ant-modal-title"[39m
+                  [33mid[39m=[32m"test-id"[39m
+                [36m>[39m
+                  [0mUpload de Anexo - Paciente 456[0m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"ant-modal-body"[39m
+                [33mstyle[39m=[32m"height: calc(100vh - 200px); padding: 0px;"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mstyle[39m=[32m"display: flex; height: 100%;"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mstyle[39m=[32m"width: 350px; padding: 24px; border-right: 1px solid rgb(240, 240, 240); overflow-y: auto;"[39m
+                  [36m>[39m
+                    [36m<form[39m
+                      [33mclass[39m=[32m"ant-form ant-form-vertical css-var-root ant-form-css-var css-dev-only-do-not-override-iecf5o"[39m
+                    [36m>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"ant-form-item css-var-root ant-form-css-var css-dev-only-do-not-override-iecf5o ant-form-item-vertical"[39m
+                      [36m>[39m
+                        [36m<div[39m
+                          [33mclass[39m=[32m"ant-row ant-form-item-row css-dev-only-do-not-override-iecf5o css-var-root"[39m
+                        [36m>[39m
+                          [36m<div[39m
+                            [33mclass[39m=[32m"ant-col ant-form-item-label css-dev-only-do-not-override-iecf5o css-var-root"[39m
+                          [36m>[39m
+                            [36m<label[39m
+                              [33mclass[39m=[32m"ant-form-item-required"[39m
+                              [33mfor[39m=[32m"id_exame"[39m
+                              [33mtitle[39m=[32m"Tipo de Exame"[39m
+                            [36m>[39m
+                              [0mTipo de Exame[0m
+                            [36m</label>[39m
+                          [36m</div>[39m
+                          [36m<div[39m
+                            [33mclass[39m=[32m"ant-col ant-form-item-control css-dev-only-do-not-override-iecf5o css-var-root"[39m
+                          [36m>[39m
+                            [36m<div[39m
+                              [33mclass[39m=[32m"ant-form-item-control-input"[39m
+                            [36m>[39m
+                              [36m<div[39m
+                                [33mclass[39m=[32m"ant-form-item-control-input-content"[39m
+                              [36m>[39m
+                                [36m<div[39m
+                                  [33mclass[39m=[32m"ant-select ant-select-outlined ant-select-in-form-item css-var-root ant-select-css-var css-dev-only-do-not-override-iecf5o ant-select-single ant-select-show-arrow ant-select-show-search"[39m
+                                [36m>[39m
+                                  [36m<div[39m
+                                    [33mclass[39m=[32m"ant-select-content"[39m
+                                  [36m>[39m
+                                    [36m<div[39m
+                                      [33mclass[39m=[32m"ant-select-placeholder"[39m
+                                      [33mstyle[39m=[32m"visibility: visible;"[39m
+                                    [36m>[39m
+                                      [0mSelecione o exame[0m
+                                    [36m</div>[39m
+                                    [36m<input[39m
+                      ...
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getAllByLabelText node_modules/@testing-library/dom/dist/queries/label-text.js:[2m111:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/modules/anexos/components/AnexoUploadModal/AnexoUploadModal.test.tsx:[2m83:30[22m[39m
+    [90m 81| [39m        [90m// Find upload input[39m
+    [90m 82| [39m        const file = new File(['test'], 'test.pdf', { type: 'applicati…
+    [90m 83| [39m        const input = screen.getByLabelText('Selecionar Arquivo').clos…
+    [90m   | [39m                             [31m^[39m
+    [90m 84| [39m
+    [90m 85| [39m        [90m// Simulate file selection[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 12:08:51
+[2m   Duration [22m 11.59s[2m (transform 199ms, setup 278ms, import 7.09s, tests 1.35s, environment 1.70s)[22m
+
