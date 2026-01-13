@@ -1,9 +1,10 @@
 import React, { useEffect, useState, type ChangeEvent } from 'react';
 import { Table, Input, Card, Space, Typography, Layout, theme, Button, message } from 'antd';
-import { SearchOutlined, UserOutlined, NumberOutlined, ReloadOutlined, UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, NumberOutlined, ReloadOutlined, UploadOutlined, ArrowLeftOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { AtendimentoService } from '../../services/atendimento.service';
 import type { Atendimento } from '../../types/atendimento.types';
 import AnexoUploadModal from '../../../anexos/components/AnexoUploadModal/AnexoUploadModal';
+import ExameViewModal from '../../../anexos/components/ExameViewModal/ExameViewModal';
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -23,9 +24,13 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
     });
     const [hasSearched, setHasSearched] = useState(false);
 
-    // Modal State
+    // Modal State - Upload
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedAtendimento, setSelectedAtendimento] = useState<Atendimento | null>(null);
+
+    // Modal State - View
+    const [isViewModalVisible, setIsViewModalVisible] = useState(false);
+    const [selectedExam, setSelectedExam] = useState<{ id: number, name: string } | null>(null);
 
     const loadData = async (cdPacienteOverride?: string) => {
         const cd_paciente = cdPacienteOverride || filters.cd_paciente;
@@ -61,6 +66,11 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
         setIsModalVisible(true);
     };
 
+    const handleViewExam = (id: number, name: string) => {
+        setSelectedExam({ id, name });
+        setIsViewModalVisible(true);
+    };
+
     const columns = [
         {
             title: 'Atendimento',
@@ -85,6 +95,32 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
             dataIndex: 'DS_PROCEDIMENTO',
             key: 'procedimento',
             render: (text: string) => text || 'NÃO INFORMADO',
+        },
+        {
+            title: 'Exames',
+            key: 'exames',
+            render: (_: any, record: Atendimento) => {
+                if (!record.LISTA_EXAMES) return '-';
+
+                const exames = record.LISTA_EXAMES.split('; ');
+                return (
+                    <Space size="small" wrap>
+                        {exames.map((exameStr, index) => {
+                            const [id, nome] = exameStr.split('|');
+                            return (
+                                <Button
+                                    key={index}
+                                    size="small"
+                                    icon={<FilePdfOutlined />}
+                                    onClick={() => handleViewExam(Number(id), nome)}
+                                >
+                                    {nome}
+                                </Button>
+                            );
+                        })}
+                    </Space>
+                );
+            }
         },
         {
             title: 'Ações',
@@ -183,8 +219,18 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
 
             <AnexoUploadModal
                 visible={isModalVisible}
-                onClose={() => setIsModalVisible(false)}
+                onClose={() => {
+                    setIsModalVisible(false);
+                    loadData(); // Refresh list after upload
+                }}
                 atendimento={selectedAtendimento}
+            />
+
+            <ExameViewModal
+                visible={isViewModalVisible}
+                onClose={() => setIsViewModalVisible(false)}
+                examId={selectedExam?.id || null}
+                examName={selectedExam?.name || null}
             />
         </Layout>
     );

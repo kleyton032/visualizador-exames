@@ -4,4 +4,5 @@ export interface Atendimento {
     NM_PACIENTE: string;
     DT_ATENDIMENTO: string;
     DS_PROCEDIMENTO: string;
+    LISTA_EXAMES?: string;
 }
