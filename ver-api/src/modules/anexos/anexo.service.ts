@@ -42,11 +42,11 @@ export class AnexoService {
       cd_paciente: data.cd_paciente,
       cd_atendimento: data.cd_atendimento,
       id_exame: data.id_exame,
-      observacoes: data.observacoes,
       olho: data.olho,
       data: new Date(),
       caminho_anexo: targetPath,
-      statusdoc: data.status
+      statusdoc: data.status,
+      observacoes: data.observacoes
     });
   }
 
