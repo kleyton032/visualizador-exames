@@ -208,7 +208,9 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                         style={{
                             background: token.colorBgContainer,
                             borderRadius: token.borderRadiusLG,
-                            overflow: 'hidden'
+                            overflow: 'hidden',
+                            boxShadow: '0 4px 12px rgba(17, 30, 255, 0.08)',
+                            border: '1px solid #d9d9d9'
                         }}
                     />
                 )}
