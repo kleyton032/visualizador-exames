@@ -1,6 +1,6 @@
 export interface Exame {
     id: number;
-    nome_exame: string;
+    tipo: string;
 }
 
 export interface UploadAnexoData {
