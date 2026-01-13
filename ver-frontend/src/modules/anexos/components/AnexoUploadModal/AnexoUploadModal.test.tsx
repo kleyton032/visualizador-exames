@@ -52,7 +52,7 @@ describe('AnexoUploadModal', () => {
     });
 
     it('loads exams on open', async () => {
-        const mockExames = [{ id: 1, nome_exame: 'RAIO-X' }];
+        const mockExames = [{ id: 1, tipo: 'RAIO-X' }];
         vi.mocked(AnexoService.listExames).mockResolvedValue(mockExames);
 
         render(<AnexoUploadModal {...defaultProps} />);

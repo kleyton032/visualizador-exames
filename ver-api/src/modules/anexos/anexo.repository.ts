@@ -15,10 +15,14 @@ export class AnexoRepository {
   private db = OracleConnection.getInstance();
 
   async listExames() {
-    const query = `SELECT id, nome_exame FROM exames`;
-    const result = await this.db.execute(query);
-    return result.rows;
+    const query = `SELECT id, tipo FROM exames`;
+    const result = await this.db.execute<{ ID: number, TIPO: string }>(query);
+    return result.rows?.map(row => ({
+      id: row.ID,
+      tipo: row.TIPO
+    })) || [];
   }
+
 
   async saveAnexoExame(data: AnexoExameData) {
     const query = `
@@ -39,8 +43,8 @@ export class AnexoRepository {
   }
 
   async getExameById(id: number) {
-    const query = `SELECT nome_exame FROM exames WHERE id = :id`;
-    const result = await this.db.execute<{ NOME_EXAME: string }>(query, { id });
+    const query = `SELECT tipo FROM exames WHERE id = :id`;
+    const result = await this.db.execute<{ TIPO: string }>(query, { id });
     return result.rows?.[0];
   }
 

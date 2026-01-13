@@ -129,7 +129,7 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
                                 filterOption={(input, option) =>
                                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                                 }
-                                options={exames.map(ex => ({ label: ex.nome_exame, value: ex.id }))}
+                                options={exames.map(ex => ({ label: ex.tipo, value: ex.id }))}
                             />
                         </Form.Item>
 
