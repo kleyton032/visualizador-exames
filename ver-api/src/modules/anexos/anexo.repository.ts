@@ -44,4 +44,10 @@ export class AnexoRepository {
     return result.rows?.[0];
   }
 
+  async getAnexoById(id: number) {
+    const query = `SELECT caminho_anexo FROM anexos_exames WHERE id = :id`;
+    const result = await this.db.execute<{ CAMINHO_ANEXO: string }>(query, { id });
+    return result.rows?.[0];
+  }
+
 }

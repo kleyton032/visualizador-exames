@@ -23,9 +23,13 @@ export class AnexoService {
 
     const baseDir = '\\\\192.168.4.18\\C$\\anexos_exames';
     const extension = path.extname(file.originalname);
-    const targetDir = path.join(baseDir, data.cd_paciente.toString());
-    const filename = `${data.cd_paciente}-${data.cd_atendimento}-${data.data}-${nomeExame}${extension}`;
-    const targetPath = path.join(targetDir, filename);
+    const targetDir = path.normalize(path.join(baseDir, data.cd_paciente.toString()));
+    const filename = `${data.cd_paciente}-${data.cd_atendimento}-${nomeExame}-${data.data}${extension}`;
+    const targetPath = path.normalize(path.join(targetDir, filename));
+
+    console.log('UPLOAD - Gravando arquivo em:', targetPath);
+    console.log('UPLOAD - Nome do Exame:', nomeExame);
+    console.log('UPLOAD - Data recebida:', data.data);
 
 
     await fs.ensureDir(targetDir);
@@ -48,5 +52,9 @@ export class AnexoService {
 
   async listExames() {
     return this.repo.listExames();
+  }
+
+  async getAnexoById(id: number) {
+    return this.repo.getAnexoById(id);
   }
 }
