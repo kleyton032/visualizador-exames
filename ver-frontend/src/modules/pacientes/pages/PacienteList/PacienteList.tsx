@@ -1,11 +1,10 @@
 import React, { useEffect, useState, type ChangeEvent } from 'react';
-import { Table, Input, Card, Space, Typography, Layout, theme, Button, message } from 'antd';
+import { Table, Input, Card, Space, Typography, theme, Button, message } from 'antd';
 import { SearchOutlined, UserOutlined, NumberOutlined, ReloadOutlined } from '@ant-design/icons';
 import { PacienteService } from '../../services/paciente.service';
 import type { Paciente } from '../../types/paciente.types';
 
 const { Title } = Typography;
-const { Content } = Layout;
 
 interface PacienteListProps {
     onVerAtendimentos: (cdPaciente: number) => void;
@@ -90,68 +89,66 @@ const PacienteList: React.FC<PacienteListProps> = ({
     };
 
     return (
-        <Layout style={{ minHeight: '100vh', background: token.colorBgContainer }}>
-            <Content style={{ padding: '24px' }}>
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                    <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Title level={2} style={{ margin: 0 }}>Consulta de Pacientes</Title>
+        <div style={{ background: 'transparent' }}>
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Title level={4} style={{ margin: 0 }}>Consulta de Pacientes</Title>
+                    <Button
+                        type="primary"
+                        icon={<ReloadOutlined />}
+                        onClick={loadData}
+                        loading={loading}
+                    >
+                        Atualizar
+                    </Button>
+                </header>
+
+                <Card bordered={true}>
+                    <Space wrap size="middle">
+                        <Input
+                            placeholder="Prontuário"
+                            prefix={<NumberOutlined />}
+                            value={filters.cd_paciente}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => handleFilterChange('cd_paciente', e.target.value)}
+                            onPressEnter={loadData}
+                            style={{ width: 180 }}
+                        />
+                        <Input
+                            placeholder="Nome do Paciente"
+                            prefix={<UserOutlined />}
+                            value={filters.nm_paciente}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => handleFilterChange('nm_paciente', e.target.value)}
+                            onPressEnter={loadData}
+                            style={{ width: 300 }}
+                        />
                         <Button
                             type="primary"
-                            icon={<ReloadOutlined />}
+                            icon={<SearchOutlined />}
                             onClick={loadData}
                             loading={loading}
                         >
-                            Atualizar
+                            Pesquisar
                         </Button>
-                    </header>
+                    </Space>
+                </Card>
 
-                    <Card bordered={true}>
-                        <Space wrap size="middle">
-                            <Input
-                                placeholder="Prontuário"
-                                prefix={<NumberOutlined />}
-                                value={filters.cd_paciente}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => handleFilterChange('cd_paciente', e.target.value)}
-                                onPressEnter={loadData}
-                                style={{ width: 180 }}
-                            />
-                            <Input
-                                placeholder="Nome do Paciente"
-                                prefix={<UserOutlined />}
-                                value={filters.nm_paciente}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => handleFilterChange('nm_paciente', e.target.value)}
-                                onPressEnter={loadData}
-                                style={{ width: 300 }}
-                            />
-                            <Button
-                                type="primary"
-                                icon={<SearchOutlined />}
-                                onClick={loadData}
-                                loading={loading}
-                            >
-                                Pesquisar
-                            </Button>
-                        </Space>
-                    </Card>
-
-                    {hasSearched && (
-                        <Table
-                            columns={columns}
-                            dataSource={data}
-                            rowKey="CD_PACIENTE"
-                            loading={loading}
-                            pagination={{ pageSize: 10 }}
-                            bordered
-                            style={{
-                                background: token.colorBgContainer,
-                                borderRadius: token.borderRadiusLG,
-                                overflow: 'hidden'
-                            }}
-                        />
-                    )}
-                </Space>
-            </Content>
-        </Layout>
+                {hasSearched && (
+                    <Table
+                        columns={columns}
+                        dataSource={data}
+                        rowKey="CD_PACIENTE"
+                        loading={loading}
+                        pagination={{ pageSize: 10 }}
+                        bordered
+                        style={{
+                            background: token.colorBgContainer,
+                            borderRadius: token.borderRadiusLG,
+                            overflow: 'hidden'
+                        }}
+                    />
+                )}
+            </Space>
+        </div>
     );
 };
 

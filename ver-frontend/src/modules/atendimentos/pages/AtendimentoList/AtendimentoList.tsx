@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type ChangeEvent } from 'react';
-import { Table, Input, Card, Space, Typography, Layout, theme, Button, message } from 'antd';
+import { Table, Input, Card, Space, Typography, theme, Button, message } from 'antd';
 import { SearchOutlined, UserOutlined, NumberOutlined, ReloadOutlined, UploadOutlined, ArrowLeftOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { AtendimentoService } from '../../services/atendimento.service';
 import type { Atendimento } from '../../types/atendimento.types';
@@ -7,7 +7,6 @@ import AnexoUploadModal from '../../../anexos/components/AnexoUploadModal/AnexoU
 import ExameViewModal from '../../../anexos/components/ExameViewModal/ExameViewModal';
 
 const { Title } = Typography;
-const { Content } = Layout;
 
 interface AtendimentoListProps {
     initialCdPaciente?: string;
@@ -143,79 +142,77 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
     };
 
     return (
-        <Layout style={{ minHeight: '100vh', background: token.colorBgContainer }}>
-            <Content style={{ padding: '24px' }}>
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                    <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Space size="middle">
-                            {onBack && (
-                                <Button
-                                    icon={<ArrowLeftOutlined />}
-                                    onClick={onBack}
-                                    type="text"
-                                    style={{ fontSize: '1.2rem' }}
-                                />
-                            )}
-                            <Title level={2} style={{ margin: 0 }}>Histórico de Atendimentos</Title>
+        <div style={{ background: 'transparent' }}>
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Space size="middle">
+                        {onBack && (
+                            <Button
+                                icon={<ArrowLeftOutlined />}
+                                onClick={onBack}
+                                type="text"
+                                style={{ fontSize: '1.2rem' }}
+                            />
+                        )}
+                        <Title level={4} style={{ margin: 0 }}>Histórico de Atendimentos</Title>
+                    </Space>
+                    <Button
+                        type="primary"
+                        icon={<ReloadOutlined />}
+                        onClick={() => loadData()}
+                        loading={loading}
+                    >
+                        Atualizar
+                    </Button>
+                </header>
+
+                {!initialCdPaciente && (
+                    <Card bordered={true}>
+                        <Space wrap size="middle">
+                            <Input
+                                placeholder="Prontuário"
+                                prefix={<NumberOutlined />}
+                                value={filters.cd_paciente}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => handleFilterChange('cd_paciente', e.target.value)}
+                                onPressEnter={() => loadData()}
+                                style={{ width: 180 }}
+                            />
+                            <Input
+                                placeholder="Nome do Paciente"
+                                prefix={<UserOutlined />}
+                                value={filters.nm_paciente}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => handleFilterChange('nm_paciente', e.target.value)}
+                                onPressEnter={() => loadData()}
+                                style={{ width: 300 }}
+                            />
+                            <Button
+                                type="primary"
+                                icon={<SearchOutlined />}
+                                onClick={() => loadData()}
+                                loading={loading}
+                            >
+                                Pesquisar
+                            </Button>
                         </Space>
-                        <Button
-                            type="primary"
-                            icon={<ReloadOutlined />}
-                            onClick={() => loadData()}
-                            loading={loading}
-                        >
-                            Atualizar
-                        </Button>
-                    </header>
+                    </Card>
+                )}
 
-                    {!initialCdPaciente && (
-                        <Card bordered={true}>
-                            <Space wrap size="middle">
-                                <Input
-                                    placeholder="Prontuário"
-                                    prefix={<NumberOutlined />}
-                                    value={filters.cd_paciente}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleFilterChange('cd_paciente', e.target.value)}
-                                    onPressEnter={() => loadData()}
-                                    style={{ width: 180 }}
-                                />
-                                <Input
-                                    placeholder="Nome do Paciente"
-                                    prefix={<UserOutlined />}
-                                    value={filters.nm_paciente}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleFilterChange('nm_paciente', e.target.value)}
-                                    onPressEnter={() => loadData()}
-                                    style={{ width: 300 }}
-                                />
-                                <Button
-                                    type="primary"
-                                    icon={<SearchOutlined />}
-                                    onClick={() => loadData()}
-                                    loading={loading}
-                                >
-                                    Pesquisar
-                                </Button>
-                            </Space>
-                        </Card>
-                    )}
-
-                    {hasSearched && (
-                        <Table
-                            columns={columns}
-                            dataSource={data}
-                            rowKey="CD_ATENDIMENTO"
-                            loading={loading}
-                            pagination={{ pageSize: 10 }}
-                            bordered
-                            style={{
-                                background: token.colorBgContainer,
-                                borderRadius: token.borderRadiusLG,
-                                overflow: 'hidden'
-                            }}
-                        />
-                    )}
-                </Space>
-            </Content>
+                {hasSearched && (
+                    <Table
+                        columns={columns}
+                        dataSource={data}
+                        rowKey="CD_ATENDIMENTO"
+                        loading={loading}
+                        pagination={{ pageSize: 10 }}
+                        bordered
+                        style={{
+                            background: token.colorBgContainer,
+                            borderRadius: token.borderRadiusLG,
+                            overflow: 'hidden'
+                        }}
+                    />
+                )}
+            </Space>
 
             <AnexoUploadModal
                 visible={isModalVisible}
@@ -232,7 +229,7 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                 examId={selectedExam?.id || null}
                 examName={selectedExam?.name || null}
             />
-        </Layout>
+        </div>
     );
 };
 
