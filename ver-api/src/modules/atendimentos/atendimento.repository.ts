@@ -11,7 +11,7 @@ export class AtendimentoRepository {
         a.cd_paciente,
         ap.nm_paciente,
         p.ds_procedimento,
-        (SELECT LISTAGG(ae.id || '|' || e.nome_exame, '; ') WITHIN GROUP (ORDER BY ae.id)
+        (SELECT LISTAGG(ae.id || '|' || e.nome_exame || '|' || ae.statusdoc, '; ') WITHIN GROUP (ORDER BY ae.id)
          FROM anexos_exames ae
          JOIN exames e ON ae.procedimento = e.id
          WHERE ae.atendimento = a.cd_atendimento) as LISTA_EXAMES

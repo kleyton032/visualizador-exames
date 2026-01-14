@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Select, Input, Upload, Button, message, Space } from 'antd';
+import { Modal, Form, Select, Input, Upload, Button, App, Space } from 'antd';
 import { UploadOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd';
 import { AnexoService } from '../../services/anexo.service';
@@ -15,6 +15,7 @@ interface AnexoUploadModalProps {
 }
 
 const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, atendimento }) => {
+    const { message } = App.useApp();
     const [form] = Form.useForm();
     const [exames, setExames] = useState<Exame[]>([]);
     const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -119,7 +120,8 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
             style={{ top: 20 }}
             styles={{ body: { height: 'calc(100vh - 200px)', padding: 0 } }}
 
-            destroyOnClose
+            destroyOnHidden
+            forceRender
         >
             <div style={{ display: 'flex', height: '100%' }}>
                 {/* Lado Esquerdo: Formulário */}

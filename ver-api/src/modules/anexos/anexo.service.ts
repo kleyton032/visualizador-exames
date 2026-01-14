@@ -57,4 +57,8 @@ export class AnexoService {
   async getAnexoById(id: number) {
     return this.repo.getAnexoById(id);
   }
+
+  async inativarAnexo(id: number) {
+    return this.repo.inativarAnexo(id);
+  }
 }
