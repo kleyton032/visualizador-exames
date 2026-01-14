@@ -34,7 +34,8 @@ const ExameViewModal: React.FC<ExameViewModalProps> = ({ visible, onClose, examI
             ]}
             width="80%"
             style={{ top: 20 }}
-            bodyStyle={{ height: 'calc(100vh - 200px)', padding: 0 }}
+            styles={{ body: { height: 'calc(100vh - 200px)', padding: 0 } }}
+
             destroyOnClose
         >
             {visible && examId && (

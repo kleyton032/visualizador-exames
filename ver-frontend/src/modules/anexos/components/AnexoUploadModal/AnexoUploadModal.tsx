@@ -49,12 +49,19 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
     };
 
     const handleUpload = async () => {
-        if (!atendimento) return;
+        console.log('--- INÍCIO DO PROCESSO DE UPLOAD ---');
+        if (!atendimento) {
+            console.log('ERRO: Atendimento não encontrado');
+            return;
+        }
 
         try {
+            console.log('Validando campos do formulário...');
             const values = await form.validateFields();
+            console.log('Campos validados com sucesso:', values);
 
             if (fileList.length === 0) {
+                console.log('ERRO: Nenhum arquivo selecionado');
                 message.warning('Por favor, selecione um arquivo');
                 return;
             }
@@ -62,7 +69,8 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
             setSubmitting(true);
 
             const formData = new FormData();
-            formData.append('file', fileList[0].originFileObj as File);
+            const rawFile = fileList[0].originFileObj || (fileList[0] as unknown as File);
+            formData.append('file', rawFile);
             formData.append('cd_paciente', atendimento.CD_PACIENTE.toString());
             formData.append('cd_atendimento', atendimento.CD_ATENDIMENTO.toString());
             formData.append('id_exame', values.id_exame);
@@ -77,14 +85,21 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
                 now.getDate().toString().padStart(2, '0');
             formData.append('data', dateStr);
 
+            console.log('Enviando para AnexoService.upload...');
             await AnexoService.upload(formData);
 
+            console.log('Upload concluído com sucesso!');
             message.success('Upload realizado com sucesso!');
             onClose();
-        } catch (error) {
-            console.error(error);
-            message.error('Erro ao realizar upload do arquivo');
+        } catch (error: any) {
+            console.error('ERRO DETALHADO NO UPLOAD:', error);
+            console.log('Propriedades do erro:', Object.getOwnPropertyNames(error));
+            if (error.response) {
+                console.log('Resposta do servidor:', error.response);
+            }
+            message.error('Erro ao realizar upload do arquivo: ' + (error.message || 'Erro desconhecido'));
         } finally {
+            console.log('--- FIM DO PROCESSO DE UPLOAD ---');
             setSubmitting(false);
         }
     };
@@ -102,7 +117,8 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
             cancelText="Cancelar"
             width="80%"
             style={{ top: 20 }}
-            bodyStyle={{ height: 'calc(100vh - 200px)', padding: 0 }}
+            styles={{ body: { height: 'calc(100vh - 200px)', padding: 0 } }}
+
             destroyOnClose
         >
             <div style={{ display: 'flex', height: '100%' }}>
@@ -159,7 +175,12 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
                                     cleanup();
                                     const url = URL.createObjectURL(file);
                                     setPreviewUrl(url);
-                                    setFileList([file]);
+                                    setFileList([{
+                                        uid: '-1',
+                                        name: file.name,
+                                        status: 'done',
+                                        originFileObj: file,
+                                    } as any]);
                                     return false; // Prevent auto-upload
                                 }}
                                 fileList={fileList}
