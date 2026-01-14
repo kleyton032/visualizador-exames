@@ -54,8 +54,8 @@ export class AnexoRepository {
     return result.rows?.[0];
   }
 
-  async inativarAnexo(id: number) {
-    const query = `UPDATE anexos_exames SET statusdoc = 'I' WHERE id = :id`;
-    await this.db.execute(query, { id }, { autoCommit: true });
+  async updateStatus(id: number, status: string) {
+    const query = `UPDATE anexos_exames SET statusdoc = :status WHERE id = :id`;
+    await this.db.execute(query, { id, status }, { autoCommit: true });
   }
 }

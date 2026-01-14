@@ -30,6 +30,10 @@ const PacienteList: React.FC<PacienteListProps> = ({
     const [loading, setLoading] = useState(false); // Mantemos o loading local
 
     const loadData = async () => {
+        if (filters.cd_paciente && filters.nm_paciente) {
+            message.warning('Preencha Prontuário ou Nome do Paciente');
+            return;
+        }
         if (!filters.cd_paciente && !filters.nm_paciente) {
             message.warning('Informe o prontuário ou nome do paciente para pesquisar');
             return;

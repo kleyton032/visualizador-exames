@@ -29,9 +29,13 @@ export class AnexoService {
         });
     }
 
-    static async inativar(id: number) {
-        return apiRequest<void>(`/anexos/inativar/${id}`, {
+    static async updateStatus(id: number, status: string) {
+        return apiRequest<void>(`/anexos/status/${id}`, {
             method: 'PATCH',
+            body: JSON.stringify({ status }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
     }
 }

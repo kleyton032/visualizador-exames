@@ -30,10 +30,16 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
 
     // Modal State - View
     const [isViewModalVisible, setIsViewModalVisible] = useState(false);
-    const [selectedExam, setSelectedExam] = useState<{ id: number, name: string } | null>(null);
+    const [selectedExam, setSelectedExam] = useState<{ id: number, name: string, status: string } | null>(null);
 
     const loadData = async (cdPacienteOverride?: string) => {
         const cd_paciente = cdPacienteOverride || filters.cd_paciente;
+
+        if (cd_paciente && filters.nm_paciente) {
+            message.warning('Preencha Prontuário ou Nome do Paciente');
+            return;
+        }
+
         if (!cd_paciente && !filters.nm_paciente) {
             message.warning('Informe o prontuário ou nome do paciente para pesquisar');
             return;
@@ -66,8 +72,8 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
         setIsModalVisible(true);
     };
 
-    const handleViewExam = (id: number, name: string) => {
-        setSelectedExam({ id, name });
+    const handleViewExam = (id: number, name: string, status: string) => {
+        setSelectedExam({ id, name, status });
         setIsViewModalVisible(true);
     };
 
@@ -107,21 +113,21 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                     <Space size="small" wrap>
                         {exames.map((exameStr, index) => {
                             const [id, nome, status] = exameStr.split('|');
-                            const isInactive = status === 'I';
+                            const isBlocked = status === 'B';
                             return (
                                 <Button
                                     key={index}
                                     size="small"
                                     icon={<FilePdfOutlined />}
-                                    onClick={() => handleViewExam(Number(id), nome)}
-                                    danger={isInactive}
-                                    style={isInactive ? {
+                                    onClick={() => handleViewExam(Number(id), nome, status)}
+                                    danger={isBlocked}
+                                    style={isBlocked ? {
                                         borderColor: '#ff4d4f',
                                         color: '#ff4d4f',
                                         background: '#fff1f0'
                                     } : undefined}
                                 >
-                                    {nome} {isInactive ? '(INATIVO)' : ''}
+                                    {nome} {isBlocked ? '(BLOQUEADO)' : ''}
                                 </Button>
                             );
                         })}
@@ -238,7 +244,8 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                 onClose={() => setIsViewModalVisible(false)}
                 examId={selectedExam?.id || null}
                 examName={selectedExam?.name || null}
-                onInactivate={() => loadData()}
+                examStatus={selectedExam?.status || 'A'}
+                onStatusChange={() => loadData()}
             />
         </div>
     );
