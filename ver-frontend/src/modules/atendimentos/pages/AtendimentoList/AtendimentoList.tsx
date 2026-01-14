@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type ChangeEvent } from 'react';
-import { Table, Input, Card, Space, Typography, theme, Button, message } from 'antd';
+import { Table, Input, Card, Space, Typography, theme, Button, App } from 'antd';
 import { SearchOutlined, UserOutlined, NumberOutlined, ReloadOutlined, UploadOutlined, ArrowLeftOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { AtendimentoService } from '../../services/atendimento.service';
 import type { Atendimento } from '../../types/atendimento.types';
@@ -14,6 +14,7 @@ interface AtendimentoListProps {
 }
 
 const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, onBack }) => {
+    const { message } = App.useApp();
     const { token } = theme.useToken();
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<Atendimento[]>([]);
@@ -105,15 +106,22 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                 return (
                     <Space size="small" wrap>
                         {exames.map((exameStr, index) => {
-                            const [id, nome] = exameStr.split('|');
+                            const [id, nome, status] = exameStr.split('|');
+                            const isInactive = status === 'I';
                             return (
                                 <Button
                                     key={index}
                                     size="small"
                                     icon={<FilePdfOutlined />}
                                     onClick={() => handleViewExam(Number(id), nome)}
+                                    danger={isInactive}
+                                    style={isInactive ? {
+                                        borderColor: '#ff4d4f',
+                                        color: '#ff4d4f',
+                                        background: '#fff1f0'
+                                    } : undefined}
                                 >
-                                    {nome}
+                                    {nome} {isInactive ? '(INATIVO)' : ''}
                                 </Button>
                             );
                         })}
@@ -143,7 +151,7 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
 
     return (
         <div style={{ background: 'transparent' }}>
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Space orientation="vertical" size="large" style={{ width: '100%' }}>
                 <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Space size="middle">
                         {onBack && (
@@ -167,7 +175,7 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                 </header>
 
                 {!initialCdPaciente && (
-                    <Card bordered={true}>
+                    <Card variant="outlined">
                         <Space wrap size="middle">
                             <Input
                                 placeholder="Prontuário"
@@ -230,6 +238,7 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                 onClose={() => setIsViewModalVisible(false)}
                 examId={selectedExam?.id || null}
                 examName={selectedExam?.name || null}
+                onInactivate={() => loadData()}
             />
         </div>
     );

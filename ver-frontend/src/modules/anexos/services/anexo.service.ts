@@ -29,5 +29,9 @@ export class AnexoService {
         });
     }
 
-
+    static async inativar(id: number) {
+        return apiRequest<void>(`/anexos/inativar/${id}`, {
+            method: 'PATCH',
+        });
+    }
 }

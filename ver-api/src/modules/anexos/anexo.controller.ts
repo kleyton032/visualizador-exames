@@ -11,7 +11,6 @@ export class AnexoController {
     res.json(exames);
   };
 
-
   upload = async (req: Request, res: Response) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -81,6 +80,17 @@ export class AnexoController {
       });
     } catch (error: any) {
       console.error('Erro interno na rota view:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  inativar = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await this.service.inativarAnexo(Number(id));
+      res.status(200).send();
+    } catch (error: any) {
+      console.error('Erro ao inativar anexo:', error);
       res.status(500).json({ error: error.message });
     }
   };

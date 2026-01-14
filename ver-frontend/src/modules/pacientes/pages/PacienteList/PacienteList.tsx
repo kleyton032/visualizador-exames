@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type ChangeEvent } from 'react';
-import { Table, Input, Card, Space, Typography, theme, Button, message } from 'antd';
+import { Table, Input, Card, Space, Typography, theme, Button, App } from 'antd';
 import { SearchOutlined, UserOutlined, NumberOutlined, ReloadOutlined } from '@ant-design/icons';
 import { PacienteService } from '../../services/paciente.service';
 import type { Paciente } from '../../types/paciente.types';
@@ -25,6 +25,7 @@ const PacienteList: React.FC<PacienteListProps> = ({
     hasSearched,
     setHasSearched
 }) => {
+    const { message } = App.useApp();
     const { token } = theme.useToken();
     const [loading, setLoading] = useState(false); // Mantemos o loading local
 
@@ -90,7 +91,7 @@ const PacienteList: React.FC<PacienteListProps> = ({
 
     return (
         <div style={{ background: 'transparent' }}>
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Space orientation="vertical" size="large" style={{ width: '100%' }}>
                 <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Title level={4} style={{ margin: 0 }}>Consulta de Pacientes</Title>
                     <Button
@@ -103,7 +104,7 @@ const PacienteList: React.FC<PacienteListProps> = ({
                     </Button>
                 </header>
 
-                <Card bordered={true}>
+                <Card variant="outlined">
                     <Space wrap size="middle">
                         <Input
                             placeholder="Prontuário"
