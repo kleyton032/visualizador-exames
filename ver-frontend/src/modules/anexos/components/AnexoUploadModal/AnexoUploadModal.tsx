@@ -5,13 +5,12 @@ import type { UploadFile } from 'antd';
 import { AnexoService } from '../../services/anexo.service';
 import type { Exame } from '../../types/anexo.types';
 
+import type { Atendimento } from '../../../atendimentos/types/atendimento.types';
+
 interface AnexoUploadModalProps {
     visible: boolean;
     onClose: () => void;
-    atendimento: {
-        CD_ATENDIMENTO: number;
-        CD_PACIENTE: number;
-    } | null;
+    atendimento: Atendimento | null;
 }
 
 const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, atendimento }) => {
@@ -109,7 +108,19 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
 
     return (
         <Modal
-            title={`Upload de Anexo - Paciente ${atendimento?.CD_PACIENTE}`}
+            title={
+                <div style={{ marginRight: 24 }}>
+                    <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '4px' }}>
+                        Upload de Anexo
+                    </div>
+                    <Space size="middle" style={{ fontSize: '13px', fontWeight: 'normal', color: '#666' }}>
+                        <span><strong>Atendimento:</strong> {atendimento?.CD_ATENDIMENTO}</span>
+                        <span><strong>Prontuário:</strong> {atendimento?.CD_PACIENTE}</span>
+                        <span><strong>Paciente:</strong> {atendimento?.NM_PACIENTE}</span>
+                        <span><strong>Nasc.:</strong> {atendimento?.DT_NASCIMENTO ? new Date(atendimento.DT_NASCIMENTO).toLocaleDateString('pt-BR') : '-'}</span>
+                    </Space>
+                </div>
+            }
             open={visible}
             onCancel={onClose}
             onOk={handleUpload}

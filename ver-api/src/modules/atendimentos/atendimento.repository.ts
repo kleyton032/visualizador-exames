@@ -10,6 +10,7 @@ export class AtendimentoRepository {
         a.dt_atendimento,
         a.cd_paciente,
         ap.nm_paciente,
+        ap.dt_nascimento,
         p.ds_procedimento,
         (SELECT LISTAGG(ae.id || '|' || e.nome_exame || '|' || ae.statusdoc, '; ') WITHIN GROUP (ORDER BY ae.id)
          FROM anexos_exames ae
@@ -21,14 +22,23 @@ export class AtendimentoRepository {
     `;
 
     const binds: { [key: string]: any } = {};
+    const conditions: string[] = [];
 
     if (filter.cd_paciente) {
-      query += ` WHERE a.cd_paciente = :cd_paciente`;
+      conditions.push(`a.cd_paciente = :cd_paciente`);
       binds.cd_paciente = filter.cd_paciente;
-    } else if (filter.nm_paciente) {
-      query += ` WHERE ap.nm_paciente LIKE :nm_paciente`;
+    }
+
+    if (filter.nm_paciente) {
+      conditions.push(`UPPER(ap.nm_paciente) LIKE UPPER(:nm_paciente)`);
       binds.nm_paciente = `%${filter.nm_paciente}%`;
     }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ` + conditions.join(' AND ');
+    }
+
+    query += ` ORDER BY a.dt_atendimento DESC, a.cd_atendimento DESC`;
 
     const result = await this.db.execute(query, binds);
     return result.rows;

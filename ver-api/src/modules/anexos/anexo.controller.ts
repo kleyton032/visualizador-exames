@@ -84,13 +84,14 @@ export class AnexoController {
     }
   };
 
-  inativar = async (req: Request, res: Response) => {
+  updateStatus = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      await this.service.inativarAnexo(Number(id));
+      const { status } = req.body;
+      await this.service.updateStatus(Number(id), status);
       res.status(200).send();
     } catch (error: any) {
-      console.error('Erro ao inativar anexo:', error);
+      console.error('Erro ao atualizar status do anexo:', error);
       res.status(500).json({ error: error.message });
     }
   };
