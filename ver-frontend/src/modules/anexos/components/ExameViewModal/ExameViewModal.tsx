@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Button, App } from 'antd';
 import { DownloadOutlined, DeleteOutlined, ExclamationCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import { AnexoService } from '../../services/anexo.service';
+import { AuthService } from '../../../../shared/auth/auth.service';
 
 interface ExameViewModalProps {
     visible: boolean;
@@ -14,8 +15,18 @@ interface ExameViewModalProps {
 
 const ExameViewModal: React.FC<ExameViewModalProps> = ({ visible, onClose, examId, examName, examStatus, onStatusChange }) => {
     const { message, modal } = App.useApp();
-    const apiBaseUrl = 'http://localhost:3000/api';
-    const fileUrl = examId ? `${apiBaseUrl}/anexos/view/${examId}` : '';
+    const [ready, setReady] = useState(false);
+    const fileUrl = examId ? `/api/anexos/view/${examId}` : '';
+
+    // Garante access token válido antes de carregar o iframe (evita abrir o PDF com sessão expirada).
+    useEffect(() => {
+        if (visible && examId) {
+            setReady(false);
+            AuthService.me()
+                .catch(() => {})
+                .finally(() => setReady(true));
+        }
+    }, [visible, examId]);
 
     const handleDownload = () => {
         if (fileUrl) {
@@ -80,7 +91,7 @@ const ExameViewModal: React.FC<ExameViewModalProps> = ({ visible, onClose, examI
 
             destroyOnHidden
         >
-            {visible && examId && (
+            {visible && examId && ready && (
                 <iframe
                     src={fileUrl}
                     title={examName || 'Exame'}

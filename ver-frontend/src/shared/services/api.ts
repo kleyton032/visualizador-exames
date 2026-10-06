@@ -1,4 +1,18 @@
-const BASE_URL = 'http://localhost:3000/api';
+const BASE_URL = '/api';
+
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshTokens(): Promise<boolean> {
+    try {
+        const res = await fetch(`${BASE_URL}/auth/refresh`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+        return res.ok;
+    } catch {
+        return false;
+    }
+}
 
 export async function apiRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const headers = new Headers(options?.headers);
@@ -10,22 +24,36 @@ export async function apiRequest<T>(endpoint: string, options?: RequestInit): Pr
 
     if (isFormData) {
         headers.delete('Content-Type');
-        console.log('apiRequest: FormData detectado, Content-Type removido para deixar o navegador definir o boundary');
     } else if (!headers.has('Content-Type')) {
         headers.set('Content-Type', 'application/json');
     }
 
-    console.log(`apiRequest: [${options?.method || 'GET'}] ${BASE_URL}${endpoint}`);
-    console.log('apiRequest: Headers:', Object.fromEntries(headers.entries()));
-
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
+    const doFetch = () => fetch(`${BASE_URL}${endpoint}`, {
         ...options,
         headers,
+        credentials: 'include',
     });
+
+    let response = await doFetch();
+
+    // Access token expirado: tenta renovar via refresh token e repete a requisição.
+    if (response.status === 401 && !endpoint.startsWith('/auth')) {
+        if (!refreshPromise) {
+            refreshPromise = refreshTokens().finally(() => {
+                refreshPromise = null;
+            });
+        }
+        const refreshed = await refreshPromise;
+        if (refreshed) {
+            response = await doFetch();
+        } else {
+            window.dispatchEvent(new Event('auth:logout'));
+            throw new Error('Sessão expirada. Faça login novamente.');
+        }
+    }
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.log(`apiRequest: Erro na resposta (${response.status}):`, errorText);
         let errorData;
         try {
             errorData = JSON.parse(errorText);
@@ -34,7 +62,6 @@ export async function apiRequest<T>(endpoint: string, options?: RequestInit): Pr
         }
         throw new Error(errorData.error || 'Request failed');
     }
-
 
     // Retorna vazio para 201 Created ou 204 No Content para evitar erro de parse JSON
     if (response.status === 201 || response.status === 204 || response.headers.get('content-length') === '0') {
