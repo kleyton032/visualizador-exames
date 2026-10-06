@@ -26,7 +26,7 @@ export const config = {
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
 
   databaseUrl: process.env.DATABASE_URL || 'postgres://ver:ver@localhost:5432/ver',
-  anexosBaseDir: process.env.ANEXOS_BASE_DIR || '\\\\192.168.4.18\\C$\\anexos_exames',
+  anexosBaseDir: process.env.ANEXOS_BASE_DIR || './uploads',
 };
 
 export const ACCESS_TOKEN_COOKIE = 'access_token';
