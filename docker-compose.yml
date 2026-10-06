@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ver}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-REDACTED}
+      POSTGRES_DB: ${POSTGRES_DB:-ver}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ver} -d ${POSTGRES_DB:-ver}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./ver-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: postgres://${POSTGRES_USER:-ver}:${POSTGRES_PASSWORD:-REDACTED}@db:5432/${POSTGRES_DB:-ver}
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env}
+      JWT_ACCESS_EXPIRES: ${JWT_ACCESS_EXPIRES:-15m}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-1}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE:-strict}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+      ORACLE_USER: ${ORACLE_USER:?defina ORACLE_USER no .env}
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD:?defina ORACLE_PASSWORD no .env}
+      ORACLE_CONNECTION: ${ORACLE_CONNECTION:?defina ORACLE_CONNECTION no .env}
+      ANEXOS_BASE_DIR: ${ANEXOS_BASE_DIR:-/data/anexos}
+    volumes:
+      - anexos:/data/anexos
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./ver-frontend
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  anexos:
