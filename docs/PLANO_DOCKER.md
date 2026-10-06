@@ -257,7 +257,7 @@ O Oracle é externo (**em outro servidor da rede** — decisão confirmada). O c
 
 ## 13. Notas da implementação
 
-- **node-oracledb atualizado para v6** (thin mode por padrão): o container da API **não precisa** de Oracle Instant Client. Thick mode só é ativado com `ORACLE_THICK_MODE=true`.
+- **node-oracledb v6 + Thick mode**: o banco Oracle é antigo (não suportado pelo Thin mode), então o container instala o **Oracle Instant Client** e usa `ORACLE_THICK_MODE=true` por padrão.
 - **Duas fontes de `.env`**: o `.env` da raiz alimenta o `docker-compose`; o `ver-api/.env` continua servindo ao dev local (ts-node-dev). Mantenha os valores em sincronia.
 - **Anexos** agora usam `ANEXOS_BASE_DIR` (config) — no container `/data/anexos` (volume `anexos`); no dev local, o default continua o caminho UNC do servidor de arquivos.
 - **Como subir**:

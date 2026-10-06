@@ -33,6 +33,7 @@ services:
       ORACLE_USER: ${ORACLE_USER:?defina ORACLE_USER no .env}
       ORACLE_PASSWORD: ${ORACLE_PASSWORD:?defina ORACLE_PASSWORD no .env}
       ORACLE_CONNECTION: ${ORACLE_CONNECTION:?defina ORACLE_CONNECTION no .env}
+      ORACLE_THICK_MODE: ${ORACLE_THICK_MODE:-true}
       ANEXOS_BASE_DIR: ${ANEXOS_BASE_DIR:-/data/anexos}
     volumes:
       - anexos:/data/anexos

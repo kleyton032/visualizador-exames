@@ -23,10 +23,12 @@ export class OracleConnection {
 
         try {
             // node-oracledb v6 usa "thin mode" por padrão (sem Oracle Client).
-            // O thick mode só é habilitado quando explicitamente solicitado.
+            // O thick mode é necessário para bancos Oracle antigos (11g) e
+            // usa o Oracle Instant Client.
             if (process.env.ORACLE_THICK_MODE === 'true') {
                 try {
-                    oracledb.initOracleClient();
+                    const libDir = process.env.ORACLE_CLIENT_DIR;
+                    oracledb.initOracleClient(libDir ? { libDir } : undefined);
                 } catch (err: any) {
                     console.error('Error initializing Thick Mode:', err?.message || err);
                 }
