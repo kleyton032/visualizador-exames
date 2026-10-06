@@ -22,14 +22,13 @@ export class OracleConnection {
         }
 
         try {
-            try {
-                oracledb.initOracleClient();
-            } catch (err: any) {
-                if (err.message.includes('DPI-1047')) {
-                    console.error('Error initializing Thick Mode: Oracle Client libraries not found in PATH.', err.message);
-                } else if (err.message.includes('NJS-009')) {
-                } else {
-                    console.error('Error initializing Thick Mode:', err);
+            // node-oracledb v6 usa "thin mode" por padrão (sem Oracle Client).
+            // O thick mode só é habilitado quando explicitamente solicitado.
+            if (process.env.ORACLE_THICK_MODE === 'true') {
+                try {
+                    oracledb.initOracleClient();
+                } catch (err: any) {
+                    console.error('Error initializing Thick Mode:', err?.message || err);
                 }
             }
 

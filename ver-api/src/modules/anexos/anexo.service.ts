@@ -1,4 +1,5 @@
 import { AnexoRepository } from './anexo.repository';
+import { config } from '../../shared/config';
 import fs from 'fs-extra';
 import path from 'path';
 
@@ -21,7 +22,7 @@ export class AnexoService {
     const examen = await this.repo.getExameById(data.id_exame);
     const tipoExame = examen ? (examen as any).TIPO : data.id_exame;
 
-    const baseDir = '\\\\192.168.4.18\\C$\\anexos_exames';
+    const baseDir = config.anexosBaseDir;
     const extension = path.extname(file.originalname);
     const targetDir = path.normalize(path.join(baseDir, data.cd_paciente.toString()));
     const filename = `${data.cd_paciente}-${data.cd_atendimento}-${tipoExame}-${data.data}${extension}`;

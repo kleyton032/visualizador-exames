@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { AnexoService } from './anexo.service';
+import { config } from '../../shared/config';
 import path from 'path';
 import fs from 'fs';
 
@@ -46,7 +47,7 @@ export class AnexoController {
       let filePath = (anexo as any).CAMINHO_ANEXO;
       filePath = path.normalize(filePath);
       const parentDir = path.dirname(filePath);
-      const baseShare = '\\\\192.168.4.18\\C$';
+      const baseShare = config.anexosBaseDir;
 
       console.log('--- DIAGNÓSTICO DE ARQUIVO ---');
       console.log('Base Share exists:', fs.existsSync(baseShare));
