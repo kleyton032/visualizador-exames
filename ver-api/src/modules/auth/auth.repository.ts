@@ -1,5 +1,5 @@
 import { PostgresConnection } from '../../shared/database/PostgresConnection';
-import { Sessao, Usuario } from './auth.types';
+import { Perfil, Sessao, Usuario } from './auth.types';
 
 // Aliases em maiúsculo mantêm a interface de `auth.types.ts` inalterada.
 const USER_COLUMNS = `
@@ -25,6 +25,31 @@ export class AuthRepository {
       [id],
     );
     return result.rows[0];
+  }
+
+  async findByEmail(email: string): Promise<Usuario | undefined> {
+    const result = await this.db.query<Usuario>(
+      `SELECT ${USER_COLUMNS} FROM app_usuarios WHERE email = $1`,
+      [email],
+    );
+    return result.rows[0];
+  }
+
+  async createUsuario(input: {
+    login: string;
+    senhaHash: string;
+    nome: string | null;
+    email: string | null;
+    perfil: Perfil;
+  }): Promise<number> {
+    const result = await this.db.query<{ id: string | number }>(
+      `INSERT INTO app_usuarios
+          (login, senha_hash, nome, email, perfil, situacao, falhas_login, criado_em, atualizado_em)
+       VALUES ($1, $2, $3, $4, $5, 'A', 0, now(), now())
+       RETURNING id`,
+      [input.login, input.senhaHash, input.nome, input.email, input.perfil],
+    );
+    return Number(result.rows[0].id);
   }
 
   async updateUltimoLogin(id: number): Promise<void> {

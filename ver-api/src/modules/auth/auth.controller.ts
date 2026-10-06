@@ -85,4 +85,14 @@ export class AuthController {
       return res.status(500).json({ error: error.message || 'Erro ao consultar usuário' });
     }
   };
+
+  createUser = async (req: Request, res: Response) => {
+    try {
+      const { login, senha, email, nome, perfil } = req.body || {};
+      const user = await this.service.createUser({ login, senha, email, nome, perfil });
+      return res.status(201).json({ user });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message || 'Erro ao criar usuário' });
+    }
+  };
 }

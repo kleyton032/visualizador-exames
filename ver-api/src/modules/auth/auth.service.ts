@@ -1,9 +1,9 @@
 import { AuthRepository } from './auth.repository';
-import { comparePassword } from '../../shared/security/password';
+import { comparePassword, hashPassword } from '../../shared/security/password';
 import { signAccessToken } from '../../shared/security/jwt';
 import { generateRefreshToken, hashToken } from '../../shared/security/token';
 import { config } from '../../shared/config';
-import { SafeUser, Usuario } from './auth.types';
+import { Perfil, SafeUser, Usuario } from './auth.types';
 
 export interface LoginResult {
   user: SafeUser;
@@ -29,6 +29,8 @@ function toSafeUser(u: Usuario): SafeUser {
 function novaExpiracaoRefresh(): Date {
   return new Date(Date.now() + config.refreshTokenTtlDays * 24 * 60 * 60 * 1000);
 }
+
+const PERFIS_VALIDOS: Perfil[] = ['ADMIN', 'OPERADOR', 'VISUALIZADOR'];
 
 export class AuthService {
   private repo = new AuthRepository();
@@ -151,5 +153,46 @@ export class AuthService {
   async me(userId: number): Promise<SafeUser | undefined> {
     const usuario = await this.repo.findById(userId);
     return usuario ? toSafeUser(usuario) : undefined;
+  }
+
+  async createUser(input: {
+    login: string;
+    senha: string;
+    email?: string;
+    nome?: string;
+    perfil: string;
+  }): Promise<SafeUser> {
+    const login = (input.login || '').trim();
+    const senha = input.senha || '';
+    const email = (input.email || '').trim() || null;
+    const nome = (input.nome || '').trim() || null;
+    const perfil = (input.perfil || '').trim().toUpperCase() as Perfil;
+
+    if (!login) {
+      throw new Error('Login é obrigatório');
+    }
+    if (senha.length < 8) {
+      throw new Error('A senha deve ter pelo menos 8 caracteres');
+    }
+    if (!PERFIS_VALIDOS.includes(perfil)) {
+      throw new Error('Perfil inválido. Use ADMIN, OPERADOR ou VISUALIZADOR');
+    }
+
+    const loginExistente = await this.repo.findByLogin(login);
+    if (loginExistente) {
+      throw new Error('Já existe um usuário com esse login');
+    }
+
+    if (email) {
+      const emailExistente = await this.repo.findByEmail(email);
+      if (emailExistente) {
+        throw new Error('Já existe um usuário com esse email');
+      }
+    }
+
+    const senhaHash = await hashPassword(senha);
+    const id = await this.repo.createUsuario({ login, senhaHash, nome, email, perfil });
+
+    return { id, login, nome, email, perfil };
   }
 }
