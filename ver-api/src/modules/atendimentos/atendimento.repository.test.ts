@@ -1,7 +1,6 @@
 import { AtendimentoRepository } from './atendimento.repository';
 import { OracleConnection } from '../../shared/database/OracleConnection';
 
-// Mock OracleConnection structure
 jest.mock('../../shared/database/OracleConnection', () => ({
     OracleConnection: {
         getInstance: jest.fn()
@@ -15,10 +14,9 @@ describe('AtendimentoRepository', () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
-        // Setup the mock execute function
+        
         mockExecute = jest.fn().mockResolvedValue({ rows: [] });
 
-        // Configure getInstance to return an object with our mockExecute
         (OracleConnection.getInstance as jest.Mock).mockReturnValue({
             execute: mockExecute
         });
@@ -35,12 +33,12 @@ describe('AtendimentoRepository', () => {
 
         expect(query).toContain('SELECT');
         expect(query).toContain('a.cd_atendimento');
-        expect(query).toContain('p.nm_paciente');
+        expect(query).toContain('ap.nm_paciente');
         expect(query).toContain('FROM atendime a');
-        expect(query).toContain('JOIN paciente p ON a.cd_paciente = p.cd_paciente');
-        expect(query).toContain('JOIN ori_ate o ON a.cd_ori_ate = o.cd_ori_ate');
-        expect(query).toContain('WHERE TRUNC(a.dt_atendimento) = TRUNC(SYSDATE)');
-        expect(query).toContain('AND a.cd_paciente = :cd_paciente');
+        expect(query).toContain('JOIN paciente ap ON a.cd_paciente = ap.cd_paciente');
+        expect(query).toContain('LEFT JOIN procedimento_sus p ON a.cd_procedimento = p.cd_procedimento');
+        expect(query).toContain('ORDER BY a.dt_atendimento DESC, a.cd_atendimento DESC');
+        expect(query).toContain('a.cd_paciente = :cd_paciente');
         expect(binds).toEqual({ cd_paciente: cdPaciente });
     });
 
@@ -51,8 +49,8 @@ describe('AtendimentoRepository', () => {
         expect(mockExecute).toHaveBeenCalledTimes(1);
         const [query, binds] = mockExecute.mock.calls[0];
 
-        expect(query).toContain('JOIN paciente p');
-        expect(query).toContain('AND p.nm_paciente LIKE :nm_paciente');
+        expect(query).toContain('JOIN paciente ap');
+        expect(query).toContain('UPPER(ap.nm_paciente) LIKE UPPER(:nm_paciente)');
         expect(binds).toEqual({ nm_paciente: `%${nmPaciente}%` });
     });
 
@@ -62,9 +60,9 @@ describe('AtendimentoRepository', () => {
         expect(mockExecute).toHaveBeenCalledTimes(1);
         const [query, binds] = mockExecute.mock.calls[0];
 
-        expect(query).toContain('WHERE TRUNC(a.dt_atendimento) = TRUNC(SYSDATE)');
-        expect(query).not.toContain('AND a.cd_paciente =');
-        expect(query).not.toContain('AND p.nm_paciente LIKE');
+        expect(query).toContain('ORDER BY a.dt_atendimento DESC, a.cd_atendimento DESC');
+        expect(query).not.toContain('a.cd_paciente = :');
+        expect(query).not.toContain('UPPER(ap.nm_paciente) LIKE');
         expect(binds).toEqual({});
     });
 });

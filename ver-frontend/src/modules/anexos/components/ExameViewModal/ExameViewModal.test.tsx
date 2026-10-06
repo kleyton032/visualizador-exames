@@ -1,6 +1,14 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ExameViewModal from './ExameViewModal';
+import { AuthService } from '../../../../shared/auth/auth.service';
+
+// Mock do AuthService (usado para renovar o token antes de carregar o iframe)
+vi.mock('../../../../shared/auth/auth.service', () => ({
+    AuthService: {
+        me: vi.fn(),
+    },
+}));
 
 // Mock by Ant Design
 beforeEach(() => {
@@ -17,6 +25,14 @@ beforeEach(() => {
             dispatchEvent: vi.fn(),
         })),
     });
+
+    vi.mocked(AuthService.me).mockResolvedValue({
+        id: 1,
+        login: 'operador',
+        nome: 'Operador',
+        email: null,
+        perfil: 'ADMIN',
+    });
 });
 
 describe('ExameViewModal', () => {
@@ -25,6 +41,7 @@ describe('ExameViewModal', () => {
         onClose: vi.fn(),
         examId: 1,
         examName: 'Teste de Exame',
+        examStatus: 'A',
     };
 
     it('renders correctly when visible', () => {
@@ -33,12 +50,12 @@ describe('ExameViewModal', () => {
         expect(screen.getByText('Visualizando Exame: Teste de Exame')).toBeInTheDocument();
     });
 
-    it('renders the iframe when visible and has examId', () => {
+    it('renders the iframe when visible and has examId', async () => {
         render(<ExameViewModal {...defaultProps} />);
 
-        const iframe = screen.getByTitle('Teste de Exame');
+        const iframe = await waitFor(() => screen.getByTitle('Teste de Exame'));
         expect(iframe).toBeInTheDocument();
-        expect(iframe).toHaveAttribute('src', 'http://localhost:3000/api/anexos/view/1');
+        expect(iframe).toHaveAttribute('src', '/api/anexos/view/1');
     });
 
     it('calls onClose when clicking Fechar button', () => {
@@ -55,3 +72,4 @@ describe('ExameViewModal', () => {
         expect(screen.queryByTitle('Teste de Exame')).not.toBeInTheDocument();
     });
 });
+

@@ -37,6 +37,9 @@ describe('AnexoUploadModal', () => {
         atendimento: {
             CD_ATENDIMENTO: 123,
             CD_PACIENTE: 456,
+            NM_PACIENTE: 'João da Silva',
+            DT_ATENDIMENTO: '2026-01-01',
+            DS_PROCEDIMENTO: 'Consulta',
         },
     };
 
@@ -45,7 +48,7 @@ describe('AnexoUploadModal', () => {
 
         render(<AnexoUploadModal {...defaultProps} />);
 
-        expect(screen.getByText('Upload de Anexo - Paciente 456')).toBeInTheDocument();
+        expect(screen.getByText('Upload de Anexo')).toBeInTheDocument();
         expect(screen.getByText('Tipo de Exame')).toBeInTheDocument();
         expect(screen.getByText('Lado (Olho)')).toBeInTheDocument();
         expect(screen.getByText('Observações')).toBeInTheDocument();
