@@ -4,27 +4,17 @@
   padding: 0;
 }
 
-/* Thicker Table Borders */
-.ant-table-wrapper .ant-table-bordered>.ant-table-container {
-  border: 1.5px solid #d9d9d9 !important;
+/* Tabelas modernas */
+.ant-table-thead > tr > th {
+  background: #e6f0ff !important;
+  color: #1f3a63 !important;
+  font-weight: 600;
 }
 
-.ant-table-wrapper .ant-table-bordered .ant-table-thead>tr>th,
-.ant-table-wrapper .ant-table-bordered .ant-table-tbody>tr>td {
-  border-right: 1.5px solid #d9d9d9 !important;
-  border-bottom: 1.5px solid #d9d9d9 !important;
+.ant-table-tbody > tr:nth-child(even) > td {
+  background-color: #f5f9ff !important;
 }
 
-.ant-table-wrapper .ant-table-bordered .ant-table-thead>tr>th:last-child,
-.ant-table-wrapper .ant-table-bordered .ant-table-tbody>tr>td:last-child {
-  border-right: none !important;
-}
-
-.ant-table-wrapper .ant-table-bordered .ant-table-tbody>tr:last-child>td {
-  border-bottom: none !important;
-}
-
-/* Adjusting the shadow and border I added in inline styles previously to be consistent */
-.ant-table {
-  border-radius: 8px !important;
+.ant-table-tbody > tr.ant-table-row:hover > td {
+  background-color: #e8f2ff !important;
 }

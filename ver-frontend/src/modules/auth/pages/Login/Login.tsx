@@ -30,7 +30,7 @@ const Login: React.FC = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 minHeight: '100vh',
-                background: '#111eff',
+                background: 'linear-gradient(135deg, #4096ff 0%, #69b1ff 100%)',
                 padding: 16,
             }}>
                 <ForgotPassword onBack={() => setShowForgot(false)} />
@@ -44,7 +44,7 @@ const Login: React.FC = () => {
             justifyContent: 'center',
             alignItems: 'center',
             minHeight: '100vh',
-            background: '#111eff',
+            background: 'linear-gradient(135deg, #4096ff 0%, #69b1ff 100%)',
             padding: 16,
         }}>
             <Card style={{ width: 380, boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}>

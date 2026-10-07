@@ -1,12 +1,12 @@
 import React, { useEffect, useState, type ChangeEvent } from 'react';
-import { Table, Input, Card, Space, Typography, theme, Button, App } from 'antd';
+import { Table, Input, Card, Space, Typography, Button, App, Tag } from 'antd';
 import { SearchOutlined, UserOutlined, NumberOutlined, ReloadOutlined, UploadOutlined, ArrowLeftOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { AtendimentoService } from '../../services/atendimento.service';
 import type { Atendimento } from '../../types/atendimento.types';
 import AnexoUploadModal from '../../../anexos/components/AnexoUploadModal/AnexoUploadModal';
 import ExameViewModal from '../../../anexos/components/ExameViewModal/ExameViewModal';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 interface AtendimentoListProps {
     initialCdPaciente?: string;
@@ -15,7 +15,6 @@ interface AtendimentoListProps {
 
 const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, onBack }) => {
     const { message } = App.useApp();
-    const { token } = theme.useToken();
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<Atendimento[]>([]);
     const [filters, setFilters] = useState({
@@ -95,11 +94,18 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
             title: 'Paciente',
             dataIndex: 'NM_PACIENTE',
             key: 'nome',
+            render: (text: string, record: Atendimento) => (
+                <div>
+                    <div style={{ fontWeight: 500 }}>{text}</div>
+                    <Text type="secondary" style={{ fontSize: 12 }}>Cód. {record.CD_PACIENTE}</Text>
+                </div>
+            ),
         },
         {
             title: 'Procedimento',
             dataIndex: 'DS_PROCEDIMENTO',
             key: 'procedimento',
+            ellipsis: true,
             render: (text: string) => text || 'NÃO INFORMADO',
         },
         {
@@ -115,20 +121,15 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                             const [id, nome, status] = exameStr.split('|');
                             const isBlocked = status === 'B';
                             return (
-                                <Button
+                                <Tag
                                     key={index}
-                                    size="small"
                                     icon={<FilePdfOutlined />}
+                                    color={isBlocked ? 'error' : 'blue'}
                                     onClick={() => handleViewExam(Number(id), nome, status)}
-                                    danger={isBlocked}
-                                    style={isBlocked ? {
-                                        borderColor: '#ff4d4f',
-                                        color: '#ff4d4f',
-                                        background: '#fff1f0'
-                                    } : undefined}
+                                    style={{ cursor: 'pointer', padding: '2px 8px' }}
                                 >
-                                    {nome} {isBlocked ? '(BLOQUEADO)' : ''}
-                                </Button>
+                                    {nome}{isBlocked ? ' (BLOQUEADO)' : ''}
+                                </Tag>
                             );
                         })}
                     </Space>
@@ -169,6 +170,9 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                             />
                         )}
                         <Title level={4} style={{ margin: 0 }}>Histórico de Atendimentos</Title>
+                        {hasSearched && (
+                            <Tag color="blue" style={{ marginLeft: 4 }}>{data.length} atendimentos</Tag>
+                        )}
                     </Space>
                     <Button
                         type="primary"
@@ -212,21 +216,16 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                 )}
 
                 {hasSearched && (
-                    <Table
-                        columns={columns}
-                        dataSource={data}
-                        rowKey="CD_ATENDIMENTO"
-                        loading={loading}
-                        pagination={{ pageSize: 10 }}
-                        bordered
-                        style={{
-                            background: token.colorBgContainer,
-                            borderRadius: token.borderRadiusLG,
-                            overflow: 'hidden',
-                            boxShadow: '0 4px 12px rgba(17, 30, 255, 0.08)',
-                            border: '1px solid #d9d9d9'
-                        }}
-                    />
+                    <Card variant="outlined" styles={{ body: { padding: 0 } }}>
+                        <Table
+                            columns={columns}
+                            dataSource={data}
+                            rowKey="CD_ATENDIMENTO"
+                            loading={loading}
+                            pagination={{ pageSize: 10 }}
+                            size="middle"
+                        />
+                    </Card>
                 )}
             </Space>
 

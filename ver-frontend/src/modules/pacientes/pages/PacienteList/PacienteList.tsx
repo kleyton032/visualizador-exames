@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type ChangeEvent } from 'react';
-import { Table, Input, Card, Space, Typography, theme, Button, App } from 'antd';
+import { Table, Input, Card, Space, Typography, Button, App } from 'antd';
 import { SearchOutlined, UserOutlined, NumberOutlined, ReloadOutlined } from '@ant-design/icons';
 import { PacienteService } from '../../services/paciente.service';
 import type { Paciente } from '../../types/paciente.types';
@@ -26,7 +26,6 @@ const PacienteList: React.FC<PacienteListProps> = ({
     setHasSearched
 }) => {
     const { message } = App.useApp();
-    const { token } = theme.useToken();
     const [loading, setLoading] = useState(false); // Mantemos o loading local
 
     const loadData = async () => {
@@ -138,21 +137,16 @@ const PacienteList: React.FC<PacienteListProps> = ({
                 </Card>
 
                 {hasSearched && (
-                    <Table
-                        columns={columns}
-                        dataSource={data}
-                        rowKey="CD_PACIENTE"
-                        loading={loading}
-                        pagination={{ pageSize: 10 }}
-                        bordered
-                        style={{
-                            background: token.colorBgContainer,
-                            borderRadius: token.borderRadiusLG,
-                            overflow: 'hidden',
-                            boxShadow: '0 4px 12px rgba(17, 30, 255, 0.08)',
-                            border: '1px solid #d9d9d9'
-                        }}
-                    />
+                    <Card variant="outlined" styles={{ body: { padding: 0 } }}>
+                        <Table
+                            columns={columns}
+                            dataSource={data}
+                            rowKey="CD_PACIENTE"
+                            loading={loading}
+                            pagination={{ pageSize: 10 }}
+                            size="middle"
+                        />
+                    </Card>
                 )}
             </Space>
         </div>
