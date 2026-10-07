@@ -19,7 +19,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 # Oracle Instant Client (necessário para o Thick mode com bancos Oracle antigos)
-RUN apt-get update && apt-get install -y --no-install-recommends libaio1 ca-certificates curl unzip && \
+RUN apt-get update && apt-get install -y --no-install-recommends libaio1 ca-certificates curl unzip ghostscript && \
     mkdir -p /opt/oracle && \
     curl -sL -o /tmp/instantclient.zip "https://download.oracle.com/otn_software/linux/instantclient/2115000/instantclient-basiclite-linux.x64-21.15.0.0.0dbru.zip" && \
     unzip -q /tmp/instantclient.zip -d /opt/oracle && \
