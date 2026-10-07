@@ -1,54 +1,89 @@
 import { AnexoRepository } from './anexo.repository';
-import { config } from '../../shared/config';
+import { getStorage } from '../../shared/storage';
+import { optimize } from '../../shared/compression';
 import fs from 'fs-extra';
 import path from 'path';
+
+export interface UploadUsuario {
+  id: number;
+  login?: string;
+}
+
+/** Remove acentos e caracteres especiais para montar um nome de arquivo seguro no S3. */
+function sanitizeNome(texto: string): string {
+  const sanitizado = texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9-_]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 80);
+
+  return sanitizado || 'EXAME';
+}
 
 export class AnexoService {
   private repo = new AnexoRepository();
 
-  constructor() {
-    this.repo = new AnexoRepository();
-  }
+  async upload(
+    file: Express.Multer.File,
+    data: {
+      cd_paciente: number;
+      cd_atendimento: number;
+      id_exame: number;
+      data: string | Date;
+      olho: string;
+      observacoes: string;
+      status: string;
+    },
+    usuario?: UploadUsuario,
+  ): Promise<number> {
+    const exame = await this.repo.getExameById(data.id_exame);
+    const tipoExame = exame ? exame.tipo : String(data.id_exame);
 
-  async upload(file: Express.Multer.File, data: {
-    cd_paciente: number;
-    cd_atendimento: number;
-    id_exame: number;
-    data: string | Date;
-    olho: string;
-    observacoes: string;
-    status: string;
-  }) {
-    const examen = await this.repo.getExameById(data.id_exame);
-    const tipoExame = examen ? (examen as any).TIPO : data.id_exame;
+    const extension = path.extname(file.originalname).toLowerCase();
+    const filename = `${data.cd_paciente}-${data.cd_atendimento}-${sanitizeNome(tipoExame)}-${data.data}${extension}`;
+    const relativeKey = path.join(String(data.cd_paciente), filename);
 
-    const baseDir = config.anexosBaseDir;
-    const extension = path.extname(file.originalname);
-    const targetDir = path.normalize(path.join(baseDir, data.cd_paciente.toString()));
-    const filename = `${data.cd_paciente}-${data.cd_atendimento}-${tipoExame}-${data.data}${extension}`;
-    const targetPath = path.normalize(path.join(targetDir, filename));
+    // Comprime (se aplicável) antes de enviar ao storage
+    const otimizado = await optimize(file.path, file.mimetype);
+    const uploadFile = otimizado.optimized
+      ? { ...file, path: otimizado.path, size: otimizado.size }
+      : file;
 
-    console.log('UPLOAD - Gravando arquivo em:', targetPath);
-    console.log('UPLOAD - Tipo do Exame:', tipoExame);
-    console.log('UPLOAD - Data recebida:', data.data);
+    const storage = getStorage();
 
+    let caminho: string;
+    try {
+      caminho = await storage.save(uploadFile, relativeKey);
+    } catch (err: any) {
+      await this.repo.registrarAuditoria(null, 'ERRO', err.message);
+      throw err;
+    } finally {
+      // limpa temporários não consumidos pelo storage
+      await fs.remove(file.path);
+      if (otimizado.optimized) {
+        await fs.remove(otimizado.path);
+      }
+    }
 
-    await fs.ensureDir(targetDir);
-
-
-    await fs.move(file.path, targetPath, { overwrite: true });
-
-
-    await this.repo.saveAnexoExame({
+    const anexoId = await this.repo.createAnexo({
       cd_paciente: data.cd_paciente,
       cd_atendimento: data.cd_atendimento,
       id_exame: data.id_exame,
+      tipo_exame: tipoExame,
       olho: data.olho,
-      data: new Date(),
-      caminho_anexo: targetPath,
+      observacoes: data.observacoes,
+      nome_arquivo: file.originalname,
+      content_type: file.mimetype,
+      tamanho_bytes: uploadFile.size,
+      caminho_anexo: caminho,
       statusdoc: data.status,
-      observacoes: data.observacoes
+      usuario_id: usuario?.id ?? null,
     });
+
+    await this.repo.registrarAuditoria(anexoId, 'SUCESSO');
+
+    return anexoId;
   }
 
   async listExames() {
@@ -57,6 +92,10 @@ export class AnexoService {
 
   async getAnexoById(id: number) {
     return this.repo.getAnexoById(id);
+  }
+
+  async resolveAnexo(caminho: string, download = false) {
+    return getStorage().resolve(caminho, { download });
   }
 
   async updateStatus(id: number, status: string) {
