@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-ver}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-REDACTED}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
       POSTGRES_DB: ${POSTGRES_DB:-ver}
     ports:
       - "5432:5432"
@@ -23,7 +23,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: "3000"
-      DATABASE_URL: postgres://${POSTGRES_USER:-ver}:${POSTGRES_PASSWORD:-REDACTED}@db:5432/${POSTGRES_DB:-ver}
+      DATABASE_URL: postgres://${POSTGRES_USER:-ver}:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}@db:5432/${POSTGRES_DB:-ver}
       JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env}
       JWT_ACCESS_EXPIRES: ${JWT_ACCESS_EXPIRES:-15m}
       REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-1}
