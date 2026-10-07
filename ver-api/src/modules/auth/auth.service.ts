@@ -4,6 +4,7 @@ import { signAccessToken } from '../../shared/security/jwt';
 import { generateRefreshToken, hashToken } from '../../shared/security/token';
 import { config } from '../../shared/config';
 import { Perfil, SafeUser, Usuario } from './auth.types';
+import * as crypto from 'crypto';
 
 export interface LoginResult {
   user: SafeUser;
@@ -194,5 +195,64 @@ export class AuthService {
     const id = await this.repo.createUsuario({ login, senhaHash, nome, email, perfil });
 
     return { id, login, nome, email, perfil };
+  }
+
+  // --- Recuperação de Senha ---
+
+  async forgotPassword(email: string, meta: RequestMeta = {}): Promise<void> {
+    const emailNormalizado = (email || '').trim();
+    if (!emailNormalizado) {
+      throw new Error('E-mail é obrigatório');
+    }
+
+    const usuario = await this.repo.findByEmail(emailNormalizado);
+    if (!usuario || usuario.SITUACAO !== 'A') {
+      // Retorna sucesso de forma silenciosa para evitar enumeração de usuários
+      return;
+    }
+
+    // Gera um token forte
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenHash = hashToken(resetToken);
+    
+    // Expira em 15 minutos
+    const expiraEm = new Date(Date.now() + 15 * 60 * 1000);
+
+    await this.repo.createRecuperacaoSenha(usuario.ID, resetTokenHash, expiraEm);
+    await this.repo.log('FORGOT_PASSWORD_REQUEST', { usuarioId: usuario.ID, ...meta });
+
+    // TODO: Integrar envio de e-mail (Resend, SendGrid, etc.)
+    const resetLink = `http://localhost:3000/reset-password?token=${resetToken}`;
+    console.log(`\n[EMAIL MOCK] Para: ${emailNormalizado} -> Link de Reset: ${resetLink}\n`);
+  }
+
+  async resetPassword(token: string, novaSenha: string, meta: RequestMeta = {}): Promise<void> {
+    if (!token || !novaSenha || novaSenha.length < 8) {
+      throw new Error('Token e senha (mínimo 8 caracteres) são obrigatórios');
+    }
+
+    const tokenHash = hashToken(token);
+    const recuperacao = await this.repo.findRecuperacaoSenhaByTokenHash(tokenHash);
+
+    if (!recuperacao) {
+      throw new Error('Token inválido ou expirado');
+    }
+
+    if (recuperacao.usado) {
+      throw new Error('Este link de recuperação já foi utilizado');
+    }
+
+    if (recuperacao.expira_em.getTime() < Date.now()) {
+      throw new Error('Token inválido ou expirado');
+    }
+
+    const senhaHash = await hashPassword(novaSenha);
+    await this.repo.updateSenha(recuperacao.usuario_id, senhaHash);
+    await this.repo.marcarRecuperacaoUsada(recuperacao.id);
+    
+    // Revoga sessões antigas para forçar re-autenticação em todos os dispositivos (boa prática LGPD/Security)
+    await this.repo.revogarSessoesUsuario(recuperacao.usuario_id);
+    
+    await this.repo.log('PASSWORD_RESET', { usuarioId: recuperacao.usuario_id, ...meta });
   }
 }

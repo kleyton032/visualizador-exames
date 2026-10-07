@@ -126,4 +126,30 @@ export class AuthRepository {
       [dados.usuarioId ?? null, acao, dados.detalhe ?? null, dados.ip ?? null, dados.userAgent ?? null],
     );
   }
+
+  // --- Recuperação de Senha ---
+
+  async createRecuperacaoSenha(usuarioId: number, tokenHash: string, expiraEm: Date): Promise<void> {
+    await this.db.query(
+      `INSERT INTO auth_recuperacao_senha (usuario_id, token_hash, expira_em, usado, criado_em) 
+       VALUES ($1, $2, $3, FALSE, now())`,
+      [usuarioId, tokenHash, expiraEm]
+    );
+  }
+
+  async findRecuperacaoSenhaByTokenHash(tokenHash: string): Promise<{ id: number; usuario_id: number; expira_em: Date; usado: boolean } | undefined> {
+    const result = await this.db.query<{ id: number; usuario_id: number; expira_em: Date; usado: boolean }>(
+      `SELECT id, usuario_id, expira_em, usado FROM auth_recuperacao_senha WHERE token_hash = $1`,
+      [tokenHash]
+    );
+    return result.rows[0];
+  }
+
+  async marcarRecuperacaoUsada(id: number): Promise<void> {
+    await this.db.query(`UPDATE auth_recuperacao_senha SET usado = TRUE WHERE id = $1`, [id]);
+  }
+
+  async updateSenha(usuarioId: number, senhaHash: string): Promise<void> {
+    await this.db.query(`UPDATE app_usuarios SET senha_hash = $1, atualizado_em = now() WHERE id = $2`, [senhaHash, usuarioId]);
+  }
 }

@@ -14,4 +14,8 @@ router.post('/logout-all', authMiddleware, controller.logoutAll);
 router.get('/me', authMiddleware, controller.me);
 router.post('/users', authMiddleware, requireRole('ADMIN'), controller.createUser);
 
+// Rotas de Recuperação de Senha
+router.post('/forgot-password', controller.forgotPassword);
+router.post('/reset-password', controller.resetPassword);
+
 export default router;

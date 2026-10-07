@@ -4,6 +4,7 @@ import { LogoutOutlined } from '@ant-design/icons';
 import AtendimentoList from './modules/atendimentos/pages/AtendimentoList/AtendimentoList';
 import PacienteList from './modules/pacientes/pages/PacienteList/PacienteList';
 import Login from './modules/auth/pages/Login/Login';
+import ResetPassword from './modules/auth/pages/ResetPassword/ResetPassword';
 import { AuthProvider, useAuth } from './shared/auth/AuthContext';
 import type { Paciente } from './modules/pacientes/types/paciente.types';
 import './App.css';
@@ -20,6 +21,11 @@ function AppContent() {
   const [pacienteData, setPacienteData] = useState<Paciente[]>([]);
   const [pacienteFilters, setPacienteFilters] = useState({ cd_paciente: '', nm_paciente: '' });
   const [pacienteHasSearched, setPacienteHasSearched] = useState(false);
+
+  // Tratamento da rota de "Redefinir senha" (como não há react-router, verificamos direto)
+  if (window.location.pathname === '/reset-password') {
+    return <ResetPassword />;
+  }
 
   const handleVerAtendimentos = (cdPaciente: number) => {
     setSelectedCdPaciente(cdPaciente.toString());
@@ -55,7 +61,7 @@ function AppContent() {
         zIndex: 1
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-          <Text style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>FAV - Anexo Exames</Text>
+          <Text style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>Anexo Exames</Text>
           <Space size="middle">
             <Text style={{ color: 'white' }}>
               {user.nome || user.login} ({user.perfil})
@@ -97,7 +103,7 @@ function AppContent() {
         padding: '20px 0',
         fontSize: '14px'
       }}>
-        FAV - Fundação Altino Ventura © {new Date().getFullYear()} | Sistema de Visualização e Anexo de Exames
+        Sistema de Visualização e Anexo de Exames © {new Date().getFullYear()}
       </Footer>
     </Layout>
   );

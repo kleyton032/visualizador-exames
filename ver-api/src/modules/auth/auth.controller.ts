@@ -95,4 +95,27 @@ export class AuthController {
       return res.status(400).json({ error: error.message || 'Erro ao criar usuário' });
     }
   };
+
+  forgotPassword = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body || {};
+      if (!email) {
+        return res.status(400).json({ error: 'E-mail é obrigatório' });
+      }
+      await this.service.forgotPassword(email, this.meta(req));
+      return res.json({ message: 'Se o e-mail existir em nossa base, as instruções de recuperação foram enviadas.' });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message || 'Erro ao solicitar recuperação de senha' });
+    }
+  };
+
+  resetPassword = async (req: Request, res: Response) => {
+    try {
+      const { token, novaSenha } = req.body || {};
+      await this.service.resetPassword(token, novaSenha, this.meta(req));
+      return res.json({ message: 'Senha redefinida com sucesso' });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message || 'Erro ao redefinir senha' });
+    }
+  };
 }

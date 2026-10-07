@@ -45,6 +45,16 @@ CREATE TABLE auth_logs (
 CREATE INDEX ix_auth_logs_usuario ON auth_logs (usuario_id);
 CREATE INDEX ix_auth_logs_data    ON auth_logs (criado_em);
 
+CREATE TABLE auth_recuperacao_senha (
+    id            BIGSERIAL PRIMARY KEY,
+    usuario_id    BIGINT NOT NULL REFERENCES app_usuarios (id),
+    token_hash    VARCHAR(200) NOT NULL,
+    expira_em     TIMESTAMPTZ NOT NULL,
+    usado         BOOLEAN NOT NULL DEFAULT FALSE,
+    criado_em     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ix_auth_recuperacao_token ON auth_recuperacao_senha (token_hash);
+
 -- ============ USUÁRIO ADMIN ============
 -- O hash bcrypt é gerado pelo Node. Após subir o compose, crie o admin com:
 --   docker compose exec -e ADMIN_SENHA="senha-forte" api node dist/scripts/seed-admin.js
