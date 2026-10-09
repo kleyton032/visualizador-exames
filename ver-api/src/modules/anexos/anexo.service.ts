@@ -98,21 +98,6 @@ export class AnexoService {
     return getStorage().resolve(caminho, { download });
   }
 
-  /** Abre o arquivo para transmissão direta (visualizador, same-origin). */
-  async openAnexo(id: number) {
-    const anexo = await this.repo.getAnexoById(id);
-    if (!anexo) return null;
-
-    const file = await getStorage().open(anexo.CAMINHO_ANEXO);
-    return {
-      nomeArquivo: anexo.NOME_ARQUIVO,
-      statusdoc: anexo.STATUSDOC,
-      contentType: anexo.CONTENT_TYPE || file.contentType || 'application/octet-stream',
-      contentLength: file.contentLength ?? (anexo.TAMANHO_BYTES ? Number(anexo.TAMANHO_BYTES) : undefined),
-      stream: file.stream,
-    };
-  }
-
   /**
    * Bloqueia um exame (opcionalmente vinculando um substituto), registrando
    * motivo, responsável e data. Usado quando um exame é anexado incorretamente.

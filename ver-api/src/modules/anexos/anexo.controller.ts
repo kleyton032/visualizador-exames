@@ -101,41 +101,6 @@ export class AnexoController {
     }
   };
 
-  /** Transmite o arquivo pela própria API (mesma origem) para o visualizador, sem depender de CORS do S3. */
-  stream = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const file = await this.service.openAnexo(Number(id));
-
-      if (!file) {
-        return res.status(404).json({ error: 'Anexo não encontrado' });
-      }
-
-      if (file.statusdoc === 'B') {
-        return res.status(403).json({ error: 'Exame bloqueado e indisponível para visualização.' });
-      }
-
-      res.setHeader('Content-Type', file.contentType);
-      res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(file.nomeArquivo ?? 'exame')}"`);
-      if (file.contentLength) {
-        res.setHeader('Content-Length', String(file.contentLength));
-      }
-
-      file.stream.on('error', (err: Error) => {
-        console.error('Erro ao transmitir arquivo:', err);
-        if (!res.headersSent) {
-          res.status(500).json({ error: err.message });
-        } else {
-          res.end();
-        }
-      });
-      file.stream.pipe(res);
-    } catch (error: any) {
-      console.error('Erro interno na rota stream:', error);
-      res.status(500).json({ error: error.message });
-    }
-  };
-
   download = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;

@@ -1,11 +1,10 @@
 import fs from 'fs-extra';
 import path from 'path';
-import type { Readable } from 'stream';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { config } from '../config';
-import { StorageFile, StorageResolve, StorageService } from './storage.types';
+import { StorageResolve, StorageService } from './storage.types';
 
 /** Driver de armazenamento no AWS S3 (bucket privado + URL pré-assinada). */
 export class S3Storage implements StorageService {
@@ -47,16 +46,5 @@ export class S3Storage implements StorageService {
 
     const url = await getSignedUrl(this.client, command, { expiresIn: config.s3PresignTtl });
     return { kind: 'url', value: url };
-  }
-
-  async open(caminho: string): Promise<StorageFile> {
-    const key = caminho.replace(/^s3:\/\/[^/]+\//, '');
-    const command = new GetObjectCommand({ Bucket: config.s3Bucket, Key: key });
-    const response = await this.client.send(command);
-    return {
-      stream: response.Body as Readable,
-      contentType: response.ContentType,
-      contentLength: response.ContentLength,
-    };
   }
 }
