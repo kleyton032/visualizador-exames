@@ -14,6 +14,33 @@ export class AnexoController {
     }
   };
 
+  listarPorPaciente = async (req: Request, res: Response) => {
+    try {
+      const cdPaciente = Number(req.params.cd_paciente);
+      if (!Number.isInteger(cdPaciente) || cdPaciente <= 0) {
+        return res.status(400).json({ error: 'Prontuário inválido' });
+      }
+
+      const page = Math.max(1, parseInt(String(req.query.page), 10) || 1);
+      const pageSize = Math.max(1, parseInt(String(req.query.pageSize), 10) || 20);
+      const status = req.query.status ? String(req.query.status).toUpperCase() : undefined;
+
+      if (status && status !== 'A' && status !== 'B') {
+        return res.status(400).json({ error: 'Status inválido' });
+      }
+
+      const result = await this.service.listarExamesPorPaciente(cdPaciente, {
+        page,
+        pageSize,
+        status,
+      });
+      res.json(result);
+    } catch (error: any) {
+      console.error('Erro ao listar exames do paciente:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
   upload = async (req: Request, res: Response) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });

@@ -101,4 +101,13 @@ export class AnexoService {
   async updateStatus(id: number, status: string) {
     return this.repo.updateStatus(id, status);
   }
+
+  async listarExamesPorPaciente(
+    cdPaciente: number,
+    opcoes: { page: number; pageSize: number; status?: string },
+  ) {
+    const page = Math.max(1, Math.floor(opcoes.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Math.floor(opcoes.pageSize) || 20));
+    return this.repo.listarPorPaciente(cdPaciente, { ...opcoes, page, pageSize });
+  }
 }

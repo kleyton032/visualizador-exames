@@ -101,4 +101,94 @@ export class AnexoRepository {
       statusdoc: r.STATUSDOC,
     }));
   }
+
+  async listarPorPaciente(
+    cdPaciente: number,
+    opcoes: { page: number; pageSize: number; status?: string },
+  ) {
+    const where: string[] = ['ae.cd_paciente = $1'];
+    const params: unknown[] = [cdPaciente];
+
+    if (opcoes.status) {
+      params.push(opcoes.status);
+      where.push(`ae.statusdoc = $${params.length}`);
+    }
+
+    params.push(opcoes.pageSize, (opcoes.page - 1) * opcoes.pageSize);
+
+    const result = await this.db.query<{
+      ID: string | number;
+      CD_PACIENTE: number;
+      CD_ATENDIMENTO: number;
+      ID_EXAME: number;
+      TIPO_EXAME: string | null;
+      NOME_EXAME: string | null;
+      OLHO: string | null;
+      OBSERVACOES: string | null;
+      NOME_ARQUIVO: string | null;
+      CONTENT_TYPE: string | null;
+      TAMANHO_BYTES: string | number | null;
+      STATUSDOC: string;
+      CRIADO_EM: string;
+    }>(
+      `SELECT ae.id AS "ID",
+              ae.cd_paciente AS "CD_PACIENTE",
+              ae.cd_atendimento AS "CD_ATENDIMENTO",
+              ae.id_exame AS "ID_EXAME",
+              ae.tipo_exame AS "TIPO_EXAME",
+              COALESCE(e.nome_exame, e.tipo, ae.tipo_exame, '') AS "NOME_EXAME",
+              ae.olho AS "OLHO",
+              ae.observacoes AS "OBSERVACOES",
+              ae.nome_arquivo AS "NOME_ARQUIVO",
+              ae.content_type AS "CONTENT_TYPE",
+              ae.tamanho_bytes AS "TAMANHO_BYTES",
+              ae.statusdoc AS "STATUSDOC",
+              ae.criado_em AS "CRIADO_EM"
+         FROM anexo_exames ae
+         LEFT JOIN exames e ON e.id = ae.id_exame
+        WHERE ${where.join(' AND ')}
+        ORDER BY ae.criado_em DESC, ae.id DESC
+        LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params,
+    );
+
+    const total = await this.countPorPaciente(cdPaciente, opcoes.status);
+
+    return {
+      data: result.rows.map((r) => ({
+        id: Number(r.ID),
+        cd_paciente: Number(r.CD_PACIENTE),
+        cd_atendimento: Number(r.CD_ATENDIMENTO),
+        id_exame: Number(r.ID_EXAME),
+        tipo_exame: r.TIPO_EXAME,
+        nome_exame: r.NOME_EXAME || '',
+        olho: r.OLHO,
+        observacoes: r.OBSERVACOES,
+        nome_arquivo: r.NOME_ARQUIVO,
+        content_type: r.CONTENT_TYPE,
+        tamanho_bytes: Number(r.TAMANHO_BYTES) || 0,
+        statusdoc: r.STATUSDOC,
+        criado_em: r.CRIADO_EM,
+      })),
+      total,
+      page: opcoes.page,
+      pageSize: opcoes.pageSize,
+    };
+  }
+
+  private async countPorPaciente(cdPaciente: number, status?: string) {
+    const where: string[] = ['cd_paciente = $1'];
+    const params: unknown[] = [cdPaciente];
+
+    if (status) {
+      params.push(status);
+      where.push(`statusdoc = $${params.length}`);
+    }
+
+    const result = await this.db.query<{ total: string | number }>(
+      `SELECT COUNT(*)::int AS total FROM anexo_exames WHERE ${where.join(' AND ')}`,
+      params,
+    );
+    return Number(result.rows[0]?.total ?? 0);
+  }
 }

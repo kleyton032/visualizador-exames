@@ -11,6 +11,7 @@ const controller = new AnexoController();
 // Autenticação antes do multer, para não gravar arquivos de requests não autenticados.
 router.post('/upload', authMiddleware, requireRole('ADMIN', 'OPERADOR'), upload.single('file'), controller.upload);
 router.get('/exames', authMiddleware, controller.listExames);
+router.get('/paciente/:cd_paciente', authMiddleware, controller.listarPorPaciente);
 router.get('/view/:id', authMiddleware, controller.view);
 router.get('/download/:id', authMiddleware, controller.download);
 router.patch('/status/:id', authMiddleware, requireRole('ADMIN', 'OPERADOR'), controller.updateStatus);

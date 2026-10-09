@@ -31,6 +31,8 @@ CREATE TABLE anexo_exames (
 );
 CREATE INDEX ix_anexo_exames_atendimento ON anexo_exames (cd_atendimento);
 CREATE INDEX ix_anexo_exames_paciente    ON anexo_exames (cd_paciente);
+-- Cobre a listagem de exames por paciente ordenada por data de anexação
+CREATE INDEX ix_anexo_exames_paciente_criado ON anexo_exames (cd_paciente, criado_em DESC);
 
 -- Auditoria dos uploads no S3
 CREATE TABLE anexos_s3 (
