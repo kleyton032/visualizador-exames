@@ -1,10 +1,20 @@
 import { apiRequest } from '../../../shared/services/api';
-import type { Exame } from '../types/anexo.types';
+import type { Exame, AnexoPacientePage } from '../types/anexo.types';
 
 export class AnexoService {
 
     static async listExames() {
         return apiRequest<Exame[]>('/anexos/exames');
+    }
+
+    static async listarPorPaciente(cdPaciente: number, filters?: { page?: number; pageSize?: number; status?: string }) {
+        const params = new URLSearchParams();
+        if (filters?.page) params.append('page', String(filters.page));
+        if (filters?.pageSize) params.append('pageSize', String(filters.pageSize));
+        if (filters?.status) params.append('status', filters.status);
+
+        const qs = params.toString();
+        return apiRequest<AnexoPacientePage>(`/anexos/paciente/${cdPaciente}${qs ? `?${qs}` : ''}`);
     }
 
     static async upload(formData: FormData) {

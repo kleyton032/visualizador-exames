@@ -3,6 +3,7 @@ import { Avatar, Button, ConfigProvider, Layout, Space, theme, Typography, App }
 import { FileSearchOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import AtendimentoList from './modules/atendimentos/pages/AtendimentoList/AtendimentoList';
 import PacienteList from './modules/pacientes/pages/PacienteList/PacienteList';
+import ExamePacienteList from './modules/anexos/pages/ExamePacienteList/ExamePacienteList';
 import Login from './modules/auth/pages/Login/Login';
 import ResetPassword from './modules/auth/pages/ResetPassword/ResetPassword';
 import { AuthProvider, useAuth } from './shared/auth/AuthContext';
@@ -16,7 +17,7 @@ const PRIMARY = '#4096ff';
 
 function AppContent() {
   const { user, loading, logout } = useAuth();
-  const [currentView, setCurrentView] = useState<'pacientes' | 'atendimentos'>('pacientes');
+  const [currentView, setCurrentView] = useState<'pacientes' | 'atendimentos' | 'exames'>('pacientes');
   const [selectedCdPaciente, setSelectedCdPaciente] = useState<string>('');
 
   // Estados persistentes da busca de pacientes
@@ -63,9 +64,35 @@ function AppContent() {
         zIndex: 1
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-          <Space size={10}>
-            <FileSearchOutlined style={{ color: '#fff', fontSize: 24 }} />
-            <Text style={{ color: '#fff', fontSize: 20, fontWeight: 600 }}>Anexo Exames</Text>
+          <Space size={24}>
+            <Space size={10}>
+              <FileSearchOutlined style={{ color: '#fff', fontSize: 24 }} />
+              <Text style={{ color: '#fff', fontSize: 20, fontWeight: 600 }}>Anexo Exames</Text>
+            </Space>
+            <Space size={4}>
+              <Button
+                type="text"
+                onClick={() => { setCurrentView('pacientes'); setSelectedCdPaciente(''); }}
+                style={{
+                  color: '#fff',
+                  fontWeight: currentView === 'pacientes' ? 700 : 400,
+                  textDecoration: currentView === 'pacientes' ? 'underline' : 'none',
+                }}
+              >
+                Pacientes
+              </Button>
+              <Button
+                type="text"
+                onClick={() => setCurrentView('exames')}
+                style={{
+                  color: '#fff',
+                  fontWeight: currentView === 'exames' ? 700 : 400,
+                  textDecoration: currentView === 'exames' ? 'underline' : 'none',
+                }}
+              >
+                Exames
+              </Button>
+            </Space>
           </Space>
           <Space size="middle">
             <Space size={8}>
@@ -98,6 +125,8 @@ function AppContent() {
               hasSearched={pacienteHasSearched}
               setHasSearched={setPacienteHasSearched}
             />
+          ) : currentView === 'exames' ? (
+            <ExamePacienteList onBack={handleBack} />
           ) : (
             <AtendimentoList initialCdPaciente={selectedCdPaciente} onBack={handleBack} />
           )}
