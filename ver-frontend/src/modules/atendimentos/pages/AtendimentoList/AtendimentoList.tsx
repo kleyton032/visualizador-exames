@@ -5,6 +5,7 @@ import { AtendimentoService } from '../../services/atendimento.service';
 import type { Atendimento } from '../../types/atendimento.types';
 import AnexoUploadModal from '../../../anexos/components/AnexoUploadModal/AnexoUploadModal';
 import ExameViewModal from '../../../anexos/components/ExameViewModal/ExameViewModal';
+import { useAuth } from '../../../../shared/auth/AuthContext';
 
 const { Title, Text } = Typography;
 
@@ -15,6 +16,8 @@ interface AtendimentoListProps {
 
 const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, onBack }) => {
     const { message } = App.useApp();
+    const { user } = useAuth();
+    const podeGerenciar = user?.perfil === 'ADMIN' || user?.perfil === 'OPERADOR';
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<Atendimento[]>([]);
     const [filters, setFilters] = useState({
@@ -29,7 +32,7 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
 
     // Modal State - View
     const [isViewModalVisible, setIsViewModalVisible] = useState(false);
-    const [selectedExam, setSelectedExam] = useState<{ id: number, name: string, status: string } | null>(null);
+    const [selectedExam, setSelectedExam] = useState<{ id: number, name: string, status: string, cdPaciente?: number } | null>(null);
 
     const loadData = async (cdPacienteOverride?: string) => {
         const cd_paciente = cdPacienteOverride || filters.cd_paciente;
@@ -71,8 +74,12 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
         setIsModalVisible(true);
     };
 
-    const handleViewExam = (id: number, name: string, status: string) => {
-        setSelectedExam({ id, name, status });
+    const handleViewExam = (id: number, name: string, status: string, cdPaciente?: number) => {
+        if (status === 'B' && !podeGerenciar) {
+            message.warning('Este exame está bloqueado e não pode ser visualizado.');
+            return;
+        }
+        setSelectedExam({ id, name, status, cdPaciente });
         setIsViewModalVisible(true);
     };
 
@@ -125,7 +132,7 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                                     key={index}
                                     icon={<FilePdfOutlined />}
                                     color={isBlocked ? 'error' : 'blue'}
-                                    onClick={() => handleViewExam(Number(id), nome, status)}
+                                    onClick={() => handleViewExam(Number(id), nome, status, record.CD_PACIENTE)}
                                     style={{ cursor: 'pointer', padding: '2px 8px' }}
                                 >
                                     {nome}{isBlocked ? ' (BLOQUEADO)' : ''}
@@ -244,6 +251,7 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
                 examId={selectedExam?.id || null}
                 examName={selectedExam?.name || null}
                 examStatus={selectedExam?.status || 'A'}
+                examCdPaciente={selectedExam?.cdPaciente}
                 onStatusChange={() => loadData()}
             />
         </div>

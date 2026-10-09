@@ -27,6 +27,9 @@ export interface AnexoPaciente {
     tamanho_bytes: number;
     statusdoc: string;
     criado_em: string;
+    motivo_bloqueio?: string | null;
+    bloqueado_em?: string | null;
+    substituido_por_id?: number | null;
 }
 
 export interface AnexoPacientePage {

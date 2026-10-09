@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ExamePacienteList from './ExamePacienteList';
 import { PacienteService } from '../../../pacientes/services/paciente.service';
 import { AnexoService } from '../../services/anexo.service';
+import { AuthService } from '../../../../shared/auth/auth.service';
 
 vi.mock('../../../pacientes/services/paciente.service', () => ({
     PacienteService: { list: vi.fn() },
@@ -10,6 +11,20 @@ vi.mock('../../../pacientes/services/paciente.service', () => ({
 
 vi.mock('../../services/anexo.service', () => ({
     AnexoService: { listarPorPaciente: vi.fn() },
+}));
+
+vi.mock('../../../../shared/auth/auth.service', () => ({
+    AuthService: { me: vi.fn().mockResolvedValue({ id: 1 }) },
+}));
+
+// Fornece um usuário operador para habilitar as ações de bloqueio.
+vi.mock('../../../../shared/auth/AuthContext', () => ({
+    useAuth: () => ({
+        user: { id: 1, login: 'operador', nome: 'Operador', email: null, perfil: 'OPERADOR' },
+        loading: false,
+        login: vi.fn(),
+        logout: vi.fn(),
+    }),
 }));
 
 // Mock do modal de visualização para não carregar iframe/AuthService no teste
@@ -58,6 +73,21 @@ beforeEach(() => {
                 statusdoc: 'A',
                 criado_em: '2026-10-09T10:30:00.000Z',
             },
+            {
+                id: 11,
+                cd_paciente: 123,
+                cd_atendimento: 450,
+                id_exame: 8,
+                tipo_exame: 'OCT',
+                nome_exame: 'Tomografia de Coerência Óptica',
+                olho: 'OD',
+                observacoes: null,
+                nome_arquivo: 'oct.pdf',
+                content_type: 'application/pdf',
+                tamanho_bytes: 182000,
+                statusdoc: 'A',
+                criado_em: '2026-09-09T10:30:00.000Z',
+            },
         ],
         total: 1,
         page: 1,
@@ -86,5 +116,71 @@ describe('ExamePacienteList', () => {
 
         await waitFor(() => expect(screen.getByText('Retinografia Colorida')).toBeInTheDocument());
         expect(AnexoService.listarPorPaciente).toHaveBeenCalledWith(123);
+    });
+
+    it('compara dois exames selecionados em painéis lado a lado', async () => {
+        render(<ExamePacienteList />);
+
+        fireEvent.change(screen.getByPlaceholderText('Prontuário'), { target: { value: '123' } });
+        fireEvent.click(screen.getByText('Pesquisar'));
+        await waitFor(() => expect(screen.getByText('Maria Silva')).toBeInTheDocument());
+        fireEvent.click(screen.getByText('Ver Exames'));
+
+        const firstSelection = await screen.findByRole('checkbox', { name: 'Selecionar Retinografia Colorida' });
+        const secondSelection = screen.getByRole('checkbox', { name: 'Selecionar Tomografia de Coerência Óptica' });
+        fireEvent.click(firstSelection);
+        fireEvent.click(secondSelection);
+        fireEvent.click(screen.getByRole('button', { name: 'Comparar selecionados (2/2)' }));
+
+        expect(await screen.findByTitle('Retinografia Colorida - 09/10/2026')).toHaveAttribute('src', '/api/anexos/view/10');
+        expect(screen.getByTitle('Tomografia de Coerência Óptica - 09/09/2026')).toHaveAttribute('src', '/api/anexos/view/11');
+        expect(screen.getByRole('separator', { name: 'Redimensionar painéis de comparação' })).toBeInTheDocument();
+        expect(AuthService.me).toHaveBeenCalled();
+    });
+
+    it('limita a seleção a dois exames', async () => {
+        vi.mocked(AnexoService.listarPorPaciente).mockResolvedValueOnce({
+            data: [
+                { id: 10, nome_exame: 'Exame A', tipo_exame: null, cd_paciente: 123, cd_atendimento: 1, id_exame: 1, olho: null, observacoes: null, nome_arquivo: null, content_type: 'application/pdf', tamanho_bytes: 10, statusdoc: 'A', criado_em: '2026-10-09' },
+                { id: 11, nome_exame: 'Exame B', tipo_exame: null, cd_paciente: 123, cd_atendimento: 1, id_exame: 1, olho: null, observacoes: null, nome_arquivo: null, content_type: 'application/pdf', tamanho_bytes: 10, statusdoc: 'A', criado_em: '2026-10-08' },
+                { id: 12, nome_exame: 'Exame C', tipo_exame: null, cd_paciente: 123, cd_atendimento: 1, id_exame: 1, olho: null, observacoes: null, nome_arquivo: null, content_type: 'application/pdf', tamanho_bytes: 10, statusdoc: 'A', criado_em: '2026-10-07' },
+            ],
+            total: 3,
+            page: 1,
+            pageSize: 20,
+        });
+        render(<ExamePacienteList />);
+
+        fireEvent.change(screen.getByPlaceholderText('Prontuário'), { target: { value: '123' } });
+        fireEvent.click(screen.getByText('Pesquisar'));
+        await waitFor(() => expect(screen.getByText('Maria Silva')).toBeInTheDocument());
+        fireEvent.click(screen.getByText('Ver Exames'));
+
+        fireEvent.click(await screen.findByRole('checkbox', { name: 'Selecionar Exame A' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Selecionar Exame B' }));
+        expect(screen.getByRole('checkbox', { name: 'Selecionar Exame C' })).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Comparar selecionados (2/2)' })).toBeEnabled();
+    });
+
+    it('não permite visualizar nem comparar um exame bloqueado', async () => {
+        vi.mocked(AnexoService.listarPorPaciente).mockResolvedValueOnce({
+            data: [
+                { id: 20, nome_exame: 'Exame Bloqueado', tipo_exame: null, cd_paciente: 123, cd_atendimento: 1, id_exame: 1, olho: null, observacoes: null, nome_arquivo: 'x.pdf', content_type: 'application/pdf', tamanho_bytes: 10, statusdoc: 'B', criado_em: '2026-10-09' },
+            ],
+            total: 1,
+            page: 1,
+            pageSize: 20,
+        });
+        render(<ExamePacienteList />);
+
+        fireEvent.change(screen.getByPlaceholderText('Prontuário'), { target: { value: '123' } });
+        fireEvent.click(screen.getByText('Pesquisar'));
+        await waitFor(() => expect(screen.getByText('Maria Silva')).toBeInTheDocument());
+        fireEvent.click(screen.getByText('Ver Exames'));
+
+        await waitFor(() => expect(screen.getByText('Exame Bloqueado')).toBeInTheDocument());
+
+        expect(screen.getByRole('button', { name: /Visualizar/ })).toBeDisabled();
+        expect(screen.getByRole('checkbox', { name: 'Selecionar Exame Bloqueado' })).toBeDisabled();
     });
 });

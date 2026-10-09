@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, App } from 'antd';
-import { DownloadOutlined, DeleteOutlined, ExclamationCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Modal, Button, App, Alert } from 'antd';
+import { DownloadOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
 import { AnexoService } from '../../services/anexo.service';
 import { AuthService } from '../../../../shared/auth/auth.service';
+import BloqueioExameModal from '../BloqueioExameModal/BloqueioExameModal';
 
 interface ExameViewModalProps {
     visible: boolean;
@@ -10,12 +11,15 @@ interface ExameViewModalProps {
     examId: number | null;
     examName: string | null;
     examStatus: string;
+    examMotivoBloqueio?: string | null;
+    examCdPaciente?: number;
     onStatusChange?: () => void;
 }
 
-const ExameViewModal: React.FC<ExameViewModalProps> = ({ visible, onClose, examId, examName, examStatus, onStatusChange }) => {
+const ExameViewModal: React.FC<ExameViewModalProps> = ({ visible, onClose, examId, examName, examStatus, examMotivoBloqueio, examCdPaciente, onStatusChange }) => {
     const { message, modal } = App.useApp();
     const [ready, setReady] = useState(false);
+    const [bloqueioVisible, setBloqueioVisible] = useState(false);
     const fileUrl = examId ? `/api/anexos/view/${examId}` : '';
 
     // Garante access token válido antes de carregar o iframe (evita abrir o PDF com sessão expirada).
@@ -34,29 +38,25 @@ const ExameViewModal: React.FC<ExameViewModalProps> = ({ visible, onClose, examI
         }
     };
 
-    const handleUpdateStatus = () => {
+    const handleReativar = () => {
         if (!examId) return;
 
-        const isActivating = examStatus === 'B';
-        const newStatus = isActivating ? 'A' : 'B';
-        const actionLabel = isActivating ? 'Ativar' : 'Bloquear';
-
         modal.confirm({
-            title: `${actionLabel} Exame`,
-            icon: isActivating ? <ReloadOutlined /> : <ExclamationCircleOutlined />,
-            content: `Tem certeza que deseja ${actionLabel.toLowerCase()} este exame?`,
-            okText: `Sim, ${actionLabel}`,
-            okType: isActivating ? 'primary' : 'danger',
+            title: 'Ativar Exame',
+            icon: <ReloadOutlined />,
+            content: 'Tem certeza que deseja ativar novamente este exame?',
+            okText: 'Sim, Ativar',
+            okType: 'primary',
             cancelText: 'Cancelar',
             onOk: async () => {
                 try {
-                    await AnexoService.updateStatus(examId, newStatus);
-                    message.success(`Exame ${isActivating ? 'ativado' : 'bloqueado'} com sucesso`);
+                    await AnexoService.reativar(examId);
+                    message.success('Exame ativado com sucesso');
                     if (onStatusChange) onStatusChange();
                     onClose();
-                } catch (error) {
+                } catch (error: any) {
                     console.error(error);
-                    message.error(`Erro ao ${actionLabel.toLowerCase()} exame`);
+                    message.error(error?.message || 'Erro ao ativar exame');
                 }
             },
         });
@@ -73,12 +73,12 @@ const ExameViewModal: React.FC<ExameViewModalProps> = ({ visible, onClose, examI
                     danger={examStatus === 'A'}
                     type={examStatus === 'B' ? 'primary' : 'default'}
                     icon={examStatus === 'B' ? <ReloadOutlined /> : <DeleteOutlined />}
-                    onClick={handleUpdateStatus}
+                    onClick={examStatus === 'B' ? handleReativar : () => setBloqueioVisible(true)}
                     style={examStatus === 'B' ? { backgroundColor: '#52c41a', borderColor: '#52c41a' } : undefined}
                 >
-                    {examStatus === 'B' ? 'Ativar Novamente' : 'Bloquear Exame'}
+                    {examStatus === 'B' ? 'Ativar Novamente' : 'Bloquear / Substituir'}
                 </Button>,
-                <Button key="download" icon={<DownloadOutlined />} onClick={handleDownload}>
+                <Button key="download" icon={<DownloadOutlined />} onClick={handleDownload} disabled={examStatus === 'B'}>
                     Download
                 </Button>,
                 <Button key="close" type="default" onClick={onClose}>
@@ -92,14 +92,42 @@ const ExameViewModal: React.FC<ExameViewModalProps> = ({ visible, onClose, examI
             destroyOnHidden
         >
             {visible && examId && ready && (
-                <iframe
-                    src={fileUrl}
-                    title={examName || 'Exame'}
-                    width="100%"
-                    height="100%"
-                    style={{ border: 'none' }}
-                />
+                examStatus === 'B' ? (
+                    <div style={{ padding: 24 }}>
+                        <Alert
+                            type="warning"
+                            showIcon
+                            message="Exame bloqueado"
+                            description={(
+                                <>
+                                    <div>Este exame está bloqueado e não pode ser visualizado. Isso pode ocorrer quando o documento foi anexado incorretamente ao paciente.</div>
+                                    {examMotivoBloqueio ? (
+                                        <div style={{ marginTop: 8 }}>
+                                            <strong>Motivo:</strong> {examMotivoBloqueio}
+                                        </div>
+                                    ) : null}
+                                </>
+                            )}
+                        />
+                    </div>
+                ) : (
+                    <iframe
+                        src={fileUrl}
+                        title={examName || 'Exame'}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 'none' }}
+                    />
+                )
             )}
+
+            <BloqueioExameModal
+                visible={bloqueioVisible}
+                onClose={() => setBloqueioVisible(false)}
+                exame={{ id: examId ?? 0, nome: examName || 'Exame' }}
+                cdPaciente={examCdPaciente}
+                onSuccess={onStatusChange}
+            />
         </Modal>
     );
 };

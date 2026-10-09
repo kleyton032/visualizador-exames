@@ -1,0 +1,116 @@
+.exame-comparison-modal .ant-modal-header {
+    margin-bottom: 12px;
+}
+
+.exame-comparison-help {
+    margin-bottom: 10px;
+    color: #667085;
+    font-size: 12px;
+}
+
+.exame-comparison-panels {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid #d9e2f0;
+    border-radius: 8px;
+    background: #f5f7fa;
+}
+
+.exame-comparison-panel {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    background: #fff;
+}
+
+.exame-comparison-panel-header {
+    display: flex;
+    min-height: 58px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e7ebf1;
+}
+
+.exame-comparison-metadata {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.exame-comparison-frame {
+    width: 100%;
+    min-height: 0;
+    flex: 1;
+    border: 0;
+    background: #e9edf3;
+}
+
+.exame-comparison-loading {
+    display: grid;
+    min-height: 0;
+    flex: 1;
+    place-items: center;
+    color: #667085;
+    background: #f5f7fa;
+}
+
+.exame-comparison-divider {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    display: grid;
+    width: 12px;
+    transform: translateX(-50%);
+    cursor: col-resize;
+    place-items: center;
+    touch-action: none;
+}
+
+.exame-comparison-divider::before {
+    position: absolute;
+    width: 2px;
+    height: 100%;
+    background: #d0d9e6;
+    content: '';
+}
+
+.exame-comparison-divider span {
+    z-index: 1;
+    width: 6px;
+    height: 40px;
+    border: 1px solid #b6c3d4;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgb(16 24 40 / 16%);
+}
+
+.exame-comparison-divider:hover span,
+.exame-comparison-divider:focus-visible span {
+    border-color: #4096ff;
+    background: #e6f4ff;
+}
+
+@media (max-width: 720px) {
+    .exame-comparison-help {
+        font-size: 11px;
+    }
+
+    .exame-comparison-panel-header {
+        min-height: 68px;
+        padding: 6px;
+    }
+
+    .exame-comparison-panel-header .ant-typography {
+        font-size: 11px;
+    }
+}

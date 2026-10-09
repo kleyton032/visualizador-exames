@@ -48,4 +48,26 @@ export class AnexoService {
             }
         });
     }
+
+    /** Bloqueia um exame, exigindo o motivo; opcionalmente vincula um substituto. */
+    static async bloquear(id: number, motivo: string, substituidoPorId?: number | null) {
+        return apiRequest<void>(`/anexos/status/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'B', motivo, substituidoPorId: substituidoPorId ?? undefined }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
+
+    /** Reativa um exame bloqueado. */
+    static async reativar(id: number) {
+        return apiRequest<void>(`/anexos/status/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'A' }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
 }
