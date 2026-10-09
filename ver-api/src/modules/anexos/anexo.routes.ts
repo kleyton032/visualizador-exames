@@ -13,6 +13,7 @@ router.post('/upload', authMiddleware, requireRole('ADMIN', 'OPERADOR'), upload.
 router.get('/exames', authMiddleware, controller.listExames);
 router.get('/paciente/:cd_paciente', authMiddleware, controller.listarPorPaciente);
 router.get('/view/:id', authMiddleware, controller.view);
+router.get('/stream/:id', authMiddleware, controller.stream);
 router.get('/download/:id', authMiddleware, controller.download);
 router.patch('/status/:id', authMiddleware, requireRole('ADMIN', 'OPERADOR'), controller.updateStatus);
 

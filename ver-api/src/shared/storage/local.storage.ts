@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { config } from '../config';
-import { StorageResolve, StorageService } from './storage.types';
+import { StorageFile, StorageResolve, StorageService } from './storage.types';
 
 /** Driver de armazenamento local (disco/UNC) — comportamento original. */
 export class LocalStorage implements StorageService {
@@ -14,5 +14,10 @@ export class LocalStorage implements StorageService {
 
   async resolve(caminho: string): Promise<StorageResolve> {
     return { kind: 'file', value: caminho };
+  }
+
+  async open(caminho: string): Promise<StorageFile> {
+    const stat = await fs.stat(caminho);
+    return { stream: fs.createReadStream(caminho), contentLength: stat.size };
   }
 }

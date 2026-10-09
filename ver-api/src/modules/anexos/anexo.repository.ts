@@ -66,15 +66,61 @@ export class AnexoRepository {
   }
 
   async getAnexoById(id: number) {
-    const result = await this.db.query<{ CAMINHO_ANEXO: string; NOME_ARQUIVO: string }>(
-      `SELECT caminho_anexo AS "CAMINHO_ANEXO", nome_arquivo AS "NOME_ARQUIVO" FROM anexo_exames WHERE id = $1`,
+    const result = await this.db.query<{
+      CAMINHO_ANEXO: string;
+      NOME_ARQUIVO: string;
+      CONTENT_TYPE: string | null;
+      TAMANHO_BYTES: string | number | null;
+      STATUSDOC: string;
+      CD_PACIENTE: number;
+      MOTIVO_BLOQUEIO: string | null;
+      BLOQUEADO_POR: string | number | null;
+      BLOQUEADO_EM: string | null;
+      SUBSTITUIDO_POR_ID: string | number | null;
+    }>(
+      `SELECT caminho_anexo AS "CAMINHO_ANEXO",
+              nome_arquivo AS "NOME_ARQUIVO",
+              content_type AS "CONTENT_TYPE",
+              tamanho_bytes AS "TAMANHO_BYTES",
+              statusdoc AS "STATUSDOC",
+              cd_paciente AS "CD_PACIENTE",
+              motivo_bloqueio AS "MOTIVO_BLOQUEIO",
+              bloqueado_por AS "BLOQUEADO_POR",
+              bloqueado_em AS "BLOQUEADO_EM",
+              substituido_por_id AS "SUBSTITUIDO_POR_ID"
+         FROM anexo_exames
+        WHERE id = $1`,
       [id],
     );
     return result.rows[0];
   }
 
-  async updateStatus(id: number, status: string) {
-    await this.db.query(`UPDATE anexo_exames SET statusdoc = $2 WHERE id = $1`, [id, status]);
+  /** Bloqueia (ou substitui) um anexo, registrando motivo, responsável e data. */
+  async bloquear(id: number, motivo: string, usuarioId: number | null, substituidoPorId?: number | null) {
+    await this.db.query(
+      `UPDATE anexo_exames
+          SET statusdoc = 'B',
+              motivo_bloqueio = $2,
+              bloqueado_por = $3,
+              bloqueado_em = now(),
+              substituido_por_id = $4
+        WHERE id = $1`,
+      [id, motivo, usuarioId, substituidoPorId ?? null],
+    );
+  }
+
+  /** Reativa um anexo e limpa os dados de bloqueio. */
+  async reativar(id: number) {
+    await this.db.query(
+      `UPDATE anexo_exames
+          SET statusdoc = 'A',
+              motivo_bloqueio = NULL,
+              bloqueado_por = NULL,
+              bloqueado_em = NULL,
+              substituido_por_id = NULL
+        WHERE id = $1`,
+      [id],
+    );
   }
 
   async listarPorAtendimentos(cdAtendimentos: number[]) {
@@ -130,6 +176,9 @@ export class AnexoRepository {
       TAMANHO_BYTES: string | number | null;
       STATUSDOC: string;
       CRIADO_EM: string;
+      MOTIVO_BLOQUEIO: string | null;
+      BLOQUEADO_EM: string | null;
+      SUBSTITUIDO_POR_ID: string | number | null;
     }>(
       `SELECT ae.id AS "ID",
               ae.cd_paciente AS "CD_PACIENTE",
@@ -143,7 +192,10 @@ export class AnexoRepository {
               ae.content_type AS "CONTENT_TYPE",
               ae.tamanho_bytes AS "TAMANHO_BYTES",
               ae.statusdoc AS "STATUSDOC",
-              ae.criado_em AS "CRIADO_EM"
+              ae.criado_em AS "CRIADO_EM",
+              ae.motivo_bloqueio AS "MOTIVO_BLOQUEIO",
+              ae.bloqueado_em AS "BLOQUEADO_EM",
+              ae.substituido_por_id AS "SUBSTITUIDO_POR_ID"
          FROM anexo_exames ae
          LEFT JOIN exames e ON e.id = ae.id_exame
         WHERE ${where.join(' AND ')}
@@ -169,6 +221,9 @@ export class AnexoRepository {
         tamanho_bytes: Number(r.TAMANHO_BYTES) || 0,
         statusdoc: r.STATUSDOC,
         criado_em: r.CRIADO_EM,
+        motivo_bloqueio: r.MOTIVO_BLOQUEIO,
+        bloqueado_em: r.BLOQUEADO_EM,
+        substituido_por_id: r.SUBSTITUIDO_POR_ID ? Number(r.SUBSTITUIDO_POR_ID) : null,
       })),
       total,
       page: opcoes.page,

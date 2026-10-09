@@ -98,8 +98,65 @@ export class AnexoService {
     return getStorage().resolve(caminho, { download });
   }
 
-  async updateStatus(id: number, status: string) {
-    return this.repo.updateStatus(id, status);
+  /** Abre o arquivo para transmissão direta (visualizador, same-origin). */
+  async openAnexo(id: number) {
+    const anexo = await this.repo.getAnexoById(id);
+    if (!anexo) return null;
+
+    const file = await getStorage().open(anexo.CAMINHO_ANEXO);
+    return {
+      nomeArquivo: anexo.NOME_ARQUIVO,
+      statusdoc: anexo.STATUSDOC,
+      contentType: anexo.CONTENT_TYPE || file.contentType || 'application/octet-stream',
+      contentLength: file.contentLength ?? (anexo.TAMANHO_BYTES ? Number(anexo.TAMANHO_BYTES) : undefined),
+      stream: file.stream,
+    };
+  }
+
+  /**
+   * Bloqueia um exame (opcionalmente vinculando um substituto), registrando
+   * motivo, responsável e data. Usado quando um exame é anexado incorretamente.
+   */
+  async bloquearExame(
+    id: number,
+    motivo: string,
+    usuario?: UploadUsuario,
+    substituidoPorId?: number | null,
+  ) {
+    const motivoLimpo = (motivo ?? '').trim();
+    if (motivoLimpo.length < 5) {
+      throw new Error('Informe o motivo do bloqueio (mínimo 5 caracteres).');
+    }
+
+    const anexo = await this.repo.getAnexoById(id);
+    if (!anexo) return null;
+
+    if (substituidoPorId) {
+      if (Number(substituidoPorId) === Number(id)) {
+        throw new Error('O exame substituto deve ser diferente do exame bloqueado.');
+      }
+      const substituto = await this.repo.getAnexoById(Number(substituidoPorId));
+      if (!substituto) {
+        throw new Error('Exame substituto não encontrado.');
+      }
+      if (Number(substituto.CD_PACIENTE) !== Number(anexo.CD_PACIENTE)) {
+        throw new Error('O exame substituto deve ser do mesmo paciente.');
+      }
+      if (substituto.STATUSDOC === 'B') {
+        throw new Error('O exame substituto selecionado está bloqueado.');
+      }
+    }
+
+    await this.repo.bloquear(id, motivoLimpo, usuario?.id ?? null, substituidoPorId ?? null);
+    return true;
+  }
+
+  /** Reativa um exame bloqueado, limpando os dados de bloqueio. */
+  async reativarExame(id: number) {
+    const anexo = await this.repo.getAnexoById(id);
+    if (!anexo) return null;
+    await this.repo.reativar(id);
+    return true;
   }
 
   async listarExamesPorPaciente(

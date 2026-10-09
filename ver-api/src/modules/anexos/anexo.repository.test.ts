@@ -65,6 +65,9 @@ describe('AnexoRepository - listarPorPaciente', () => {
             TAMANHO_BYTES: '152000',
             STATUSDOC: 'A',
             CRIADO_EM: '2026-10-09T10:30:00.000Z',
+            MOTIVO_BLOQUEIO: null,
+            BLOQUEADO_EM: null,
+            SUBSTITUIDO_POR_ID: null,
           },
         ],
       })
@@ -90,6 +93,9 @@ describe('AnexoRepository - listarPorPaciente', () => {
         tamanho_bytes: 152000,
         statusdoc: 'A',
         criado_em: '2026-10-09T10:30:00.000Z',
+        motivo_bloqueio: null,
+        bloqueado_em: null,
+        substituido_por_id: null,
       },
     ]);
   });

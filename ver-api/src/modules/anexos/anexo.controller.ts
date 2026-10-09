@@ -78,12 +78,15 @@ export class AnexoController {
         return res.status(404).json({ error: 'Anexo não encontrado' });
       }
 
+      if (anexo.STATUSDOC === 'B') {
+        return res.status(403).json({ error: 'Exame bloqueado e indisponível para visualização.' });
+      }
+
       const resolved = await this.service.resolveAnexo(anexo.CAMINHO_ANEXO, false);
 
       if (resolved.kind === 'url') {
         return res.redirect(resolved.value);
       }
-
       return res.sendFile(resolved.value, (err) => {
         if (err) {
           console.error('Erro ao enviar arquivo:', err);
@@ -98,6 +101,41 @@ export class AnexoController {
     }
   };
 
+  /** Transmite o arquivo pela própria API (mesma origem) para o visualizador, sem depender de CORS do S3. */
+  stream = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const file = await this.service.openAnexo(Number(id));
+
+      if (!file) {
+        return res.status(404).json({ error: 'Anexo não encontrado' });
+      }
+
+      if (file.statusdoc === 'B') {
+        return res.status(403).json({ error: 'Exame bloqueado e indisponível para visualização.' });
+      }
+
+      res.setHeader('Content-Type', file.contentType);
+      res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(file.nomeArquivo ?? 'exame')}"`);
+      if (file.contentLength) {
+        res.setHeader('Content-Length', String(file.contentLength));
+      }
+
+      file.stream.on('error', (err: Error) => {
+        console.error('Erro ao transmitir arquivo:', err);
+        if (!res.headersSent) {
+          res.status(500).json({ error: err.message });
+        } else {
+          res.end();
+        }
+      });
+      file.stream.pipe(res);
+    } catch (error: any) {
+      console.error('Erro interno na rota stream:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
   download = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
@@ -105,6 +143,10 @@ export class AnexoController {
 
       if (!anexo) {
         return res.status(404).json({ error: 'Anexo não encontrado' });
+      }
+
+      if (anexo.STATUSDOC === 'B') {
+        return res.status(403).json({ error: 'Exame bloqueado e indisponível para download.' });
       }
 
       const resolved = await this.service.resolveAnexo(anexo.CAMINHO_ANEXO, true);
@@ -122,13 +164,41 @@ export class AnexoController {
 
   updateStatus = async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      const { status } = req.body;
-      await this.service.updateStatus(Number(id), status);
+      const id = Number(req.params.id);
+      if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ error: 'Anexo inválido' });
+      }
+
+      const { status, motivo, substituidoPorId } = req.body ?? {};
+      const usuario = req.user ? { id: req.user.id, login: req.user.login } : undefined;
+
+      if (status === 'B') {
+        const resultado = await this.service.bloquearExame(
+          id,
+          motivo,
+          usuario,
+          substituidoPorId ? Number(substituidoPorId) : undefined,
+        );
+        if (resultado === null) {
+          return res.status(404).json({ error: 'Anexo não encontrado' });
+        }
+      } else if (status === 'A') {
+        const resultado = await this.service.reativarExame(id);
+        if (resultado === null) {
+          return res.status(404).json({ error: 'Anexo não encontrado' });
+        }
+      } else {
+        return res.status(400).json({ error: 'Status inválido' });
+      }
+
       res.status(200).send();
     } catch (error: any) {
-      console.error('Erro ao atualizar status do anexo:', error);
-      res.status(500).json({ error: error.message });
+      const mensagem = error?.message ?? 'Erro ao atualizar status do anexo';
+      const regraDeNegocio = /^(Informe o motivo|O exame substituto|Exame substituto)/.test(mensagem);
+      if (!regraDeNegocio) {
+        console.error('Erro ao atualizar status do anexo:', error);
+      }
+      res.status(regraDeNegocio ? 400 : 500).json({ error: mensagem });
     }
   };
 }
