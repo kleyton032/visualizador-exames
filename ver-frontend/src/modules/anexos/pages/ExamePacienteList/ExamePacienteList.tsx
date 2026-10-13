@@ -10,16 +10,13 @@ import {
     ArrowLeftOutlined,
     SwapOutlined,
     CloseOutlined,
-    StopOutlined,
 } from '@ant-design/icons';
 import { PacienteService } from '../../../pacientes/services/paciente.service';
 import type { Paciente } from '../../../pacientes/types/paciente.types';
 import { AnexoService } from '../../services/anexo.service';
 import type { AnexoPaciente } from '../../types/anexo.types';
 import ExameViewModal from '../../components/ExameViewModal/ExameViewModal';
-import BloqueioExameModal from '../../components/BloqueioExameModal/BloqueioExameModal';
 import { AuthService } from '../../../../shared/auth/auth.service';
-import { useAuth } from '../../../../shared/auth/AuthContext';
 import './ExamePacienteList.css';
 
 const { Title, Text } = Typography;
@@ -31,8 +28,6 @@ interface ExamePacienteListProps {
 
 const ExamePacienteList: React.FC<ExamePacienteListProps> = ({ onBack }) => {
     const { message } = App.useApp();
-    const { user } = useAuth();
-    const podeBloquear = user?.perfil === 'ADMIN' || user?.perfil === 'OPERADOR';
 
     // Busca de pacientes
     const [loadingPacientes, setLoadingPacientes] = useState(false);
@@ -47,7 +42,6 @@ const ExamePacienteList: React.FC<ExamePacienteListProps> = ({ onBack }) => {
 
     // Visualização
     const [viewModal, setViewModal] = useState<{ id: number; name: string; status: string; motivoBloqueio?: string | null } | null>(null);
-    const [bloqueioExame, setBloqueioExame] = useState<AnexoPaciente | null>(null);
     const [selectedExamIds, setSelectedExamIds] = useState<React.Key[]>([]);
     const [comparisonExams, setComparisonExams] = useState<AnexoPaciente[]>([]);
     const [comparisonOpen, setComparisonOpen] = useState(false);
@@ -268,30 +262,18 @@ const ExamePacienteList: React.FC<ExamePacienteListProps> = ({ onBack }) => {
         {
             title: 'Ações',
             key: 'acoes',
-            width: 260,
+            width: 140,
             render: (_: any, record: AnexoPaciente) => (
-                <Space size="small">
-                    <Tooltip title={record.statusdoc === 'B' ? 'Exame bloqueado — não pode ser visualizado' : ''}>
-                        <Button
-                            type="link"
-                            icon={<EyeOutlined />}
-                            disabled={record.statusdoc === 'B'}
-                            onClick={() => abrirExame(record)}
-                        >
-                            Visualizar
-                        </Button>
-                    </Tooltip>
-                    {podeBloquear && record.statusdoc === 'A' && (
-                        <Button
-                            type="link"
-                            danger
-                            icon={<StopOutlined />}
-                            onClick={() => setBloqueioExame(record)}
-                        >
-                            Bloquear / Substituir
-                        </Button>
-                    )}
-                </Space>
+                <Tooltip title={record.statusdoc === 'B' ? 'Exame bloqueado — não pode ser visualizado' : ''}>
+                    <Button
+                        type="link"
+                        icon={<EyeOutlined />}
+                        disabled={record.statusdoc === 'B'}
+                        onClick={() => abrirExame(record)}
+                    >
+                        Visualizar
+                    </Button>
+                </Tooltip>
             ),
         },
     ];
@@ -415,16 +397,6 @@ const ExamePacienteList: React.FC<ExamePacienteListProps> = ({ onBack }) => {
                 examMotivoBloqueio={viewModal?.motivoBloqueio ?? null}
                 examCdPaciente={selectedPaciente?.CD_PACIENTE}
                 onStatusChange={() => {
-                    if (selectedPaciente) selecionarPaciente(selectedPaciente);
-                }}
-            />
-
-            <BloqueioExameModal
-                visible={!!bloqueioExame}
-                onClose={() => setBloqueioExame(null)}
-                exame={bloqueioExame ? { id: bloqueioExame.id, nome: rotuloExame(bloqueioExame) } : null}
-                cdPaciente={selectedPaciente?.CD_PACIENTE}
-                onSuccess={() => {
                     if (selectedPaciente) selecionarPaciente(selectedPaciente);
                 }}
             />

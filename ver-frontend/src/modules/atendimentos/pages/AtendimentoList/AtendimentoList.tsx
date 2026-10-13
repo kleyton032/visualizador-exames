@@ -146,7 +146,7 @@ const AtendimentoList: React.FC<AtendimentoListProps> = ({ initialCdPaciente, on
         {
             title: 'Ações',
             key: 'acoes',
-            width: 150,
+            width: 120,
             render: (_: any, record: Atendimento) => (
                 <Button
                     type="link"
