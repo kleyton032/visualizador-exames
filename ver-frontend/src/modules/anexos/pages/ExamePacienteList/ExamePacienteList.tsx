@@ -310,6 +310,9 @@ const ExamePacienteList: React.FC<ExamePacienteListProps> = ({ onBack }) => {
 
                 {!selectedPaciente && (
                     <Card variant="outlined">
+                        <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+                            Pesquise pelo prontuário ou pelo nome do paciente (preencha apenas um dos campos).
+                        </Text>
                         <Space wrap size="middle">
                             <Input
                                 placeholder="Prontuário"

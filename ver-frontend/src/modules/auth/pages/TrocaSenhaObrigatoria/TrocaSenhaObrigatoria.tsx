@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { App, Button, Card, Form, Input, Typography } from 'antd';
+import { Alert, App, Button, Card, Form, Input, Typography } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
 import { useAuth } from '../../../../shared/auth/AuthContext';
 
@@ -39,9 +39,17 @@ const TrocaSenhaObrigatoria: React.FC = () => {
                 <Title level={4} style={{ textAlign: 'center', marginBottom: 4 }}>
                     Defina uma nova senha
                 </Title>
-                <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginBottom: 24 }}>
+                <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginBottom: 16 }}>
                     Para continuar, você precisa alterar sua senha antes de acessar o sistema.
                 </Text>
+
+                <Alert
+                    type="info"
+                    showIcon
+                    message="Regras da senha"
+                    description="Mínimo de 10 caracteres, com ao menos uma letra maiúscula, uma minúscula, um número e um símbolo."
+                    style={{ marginBottom: 16 }}
+                />
 
                 <Form layout="vertical" onFinish={onFinish}>
                     <Form.Item

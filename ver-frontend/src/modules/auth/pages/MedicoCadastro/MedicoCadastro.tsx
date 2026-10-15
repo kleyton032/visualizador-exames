@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { App, Button, Card, Form, Input, Steps, Typography } from 'antd';
+import { Alert, App, Button, Card, Form, Input, Steps, Typography } from 'antd';
 import { IdcardOutlined, LockOutlined, MailOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useAuth } from '../../../../shared/auth/AuthContext';
 import { AuthService } from '../../../../shared/auth/auth.service';
@@ -105,9 +105,13 @@ const MedicoCadastro: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
                 {step === 0 && (
                     <Form layout="vertical" onFinish={etapa1}>
+                        <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+                            Informe o CPF e a data de nascimento cadastrados no hospital para validar seu vínculo.
+                        </Text>
                         <Form.Item
                             label="CPF"
                             name="cpf"
+                            tooltip="Somente números — com ou sem pontos/traço."
                             rules={[
                                 { required: true, message: 'Informe o CPF' },
                                 { pattern: /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/, message: 'CPF inválido' },
@@ -124,6 +128,7 @@ const MedicoCadastro: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                         <Form.Item
                             label="Data de nascimento"
                             name="dataNascimento"
+                            tooltip="DD/MM/AAAA ou apenas 8 dígitos (ex.: 24061993)."
                             rules={[{ required: true, message: 'Informe a data de nascimento' }]}
                         >
                             <Input
@@ -150,6 +155,13 @@ const MedicoCadastro: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                             Vínculo confirmado: {nome}
                             {onepassIntegrado ? ' (OnePass integrado)' : ''}
                         </Text>
+                        <Alert
+                            type="info"
+                            showIcon
+                            message="Regras da senha"
+                            description="Mínimo de 10 caracteres, com ao menos uma letra maiúscula, uma minúscula, um número e um símbolo."
+                            style={{ marginBottom: 16 }}
+                        />
                         <Form.Item
                             label="E-mail"
                             name="email"
@@ -210,7 +222,8 @@ const MedicoCadastro: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 {step === 2 && (
                     <Form layout="vertical" onFinish={etapa3}>
                         <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-                            Enviamos um código de 6 dígitos para <b>{email}</b>. Informe-o abaixo.
+                            Enviamos um código de <b>6 dígitos</b> para <b>{email}</b>.
+                            Informe-o abaixo — ele expira em <b>10 minutos</b>.
                         </Text>
                         <Form.Item
                             label="Código de confirmação"

@@ -204,7 +204,7 @@ const AnexoUploadModal: React.FC<AnexoUploadModalProps> = ({ visible, onClose, a
                             </Upload>
                             <Space style={{ marginTop: 8, color: '#888', fontSize: '12px' }}>
                                 <InfoCircleOutlined />
-                                <span>PDF, JPG, PNG e JPEG</span>
+                                <span>Formatos aceitos: PDF, JPG ou PNG · tamanho máximo: 80 MB</span>
                             </Space>
                         </Form.Item>
                     </Form>
