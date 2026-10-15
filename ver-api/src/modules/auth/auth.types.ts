@@ -9,6 +9,8 @@ export interface Usuario {
   PERFIL: Perfil;
   SITUACAO: string;
   ULTIMO_LOGIN?: Date;
+  PRECISA_TROCAR_SENHA?: boolean;
+  SENHA_TEMPORARIA_EXPIRA_EM?: Date | null;
 }
 
 export interface SafeUser {

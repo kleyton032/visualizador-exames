@@ -35,7 +35,13 @@ export class AuthController {
       }
 
       const result = await this.service.login(login, senha, this.meta(req));
-      this.setAuthCookies(res, result.accessToken, result.refreshToken);
+
+      if (result.mustChangePassword) {
+        res.cookie(cookieNames.access, result.accessToken, accessTokenCookieOptions());
+        return res.json({ user: result.user, mustChangePassword: true });
+      }
+
+      this.setAuthCookies(res, result.accessToken, result.refreshToken!);
       return res.json({ user: result.user });
     } catch (error: any) {
       return res.status(401).json({ error: error.message || 'Falha no login' });
@@ -46,7 +52,7 @@ export class AuthController {
     try {
       const token = req.cookies?.[cookieNames.refresh];
       const result = await this.service.refresh(token, this.meta(req));
-      this.setAuthCookies(res, result.accessToken, result.refreshToken);
+      this.setAuthCookies(res, result.accessToken, result.refreshToken!);
       return res.json({ user: result.user });
     } catch (error: any) {
       this.clearAuthCookies(res);
@@ -116,6 +122,21 @@ export class AuthController {
       return res.json({ message: 'Senha redefinida com sucesso' });
     } catch (error: any) {
       return res.status(400).json({ error: error.message || 'Erro ao redefinir senha' });
+    }
+  };
+
+  trocarSenhaObrigatoria = async (req: Request, res: Response) => {
+    try {
+      const { novaSenha } = req.body || {};
+      if (!novaSenha) {
+        return res.status(400).json({ error: 'A nova senha é obrigatória' });
+      }
+
+      const result = await this.service.trocarSenhaObrigatoria(req.user!.id, novaSenha, this.meta(req));
+      this.setAuthCookies(res, result.accessToken, result.refreshToken!);
+      return res.json({ user: result.user });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message || 'Erro ao alterar a senha' });
     }
   };
 }

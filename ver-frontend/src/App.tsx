@@ -6,6 +6,8 @@ import PacienteList from './modules/pacientes/pages/PacienteList/PacienteList';
 import ExamePacienteList from './modules/anexos/pages/ExamePacienteList/ExamePacienteList';
 import Login from './modules/auth/pages/Login/Login';
 import ResetPassword from './modules/auth/pages/ResetPassword/ResetPassword';
+import TrocaSenhaObrigatoria from './modules/auth/pages/TrocaSenhaObrigatoria/TrocaSenhaObrigatoria';
+import UsuariosList from './modules/usuarios/pages/UsuariosList/UsuariosList';
 import { AuthProvider, useAuth } from './shared/auth/AuthContext';
 import type { Paciente } from './modules/pacientes/types/paciente.types';
 import './App.css';
@@ -16,8 +18,8 @@ const { Text } = Typography;
 const PRIMARY = '#4096ff';
 
 function AppContent() {
-  const { user, loading, logout } = useAuth();
-  const [currentView, setCurrentView] = useState<'pacientes' | 'atendimentos' | 'exames'>('pacientes');
+  const { user, loading, mustChangePassword, logout } = useAuth();
+  const [currentView, setCurrentView] = useState<'pacientes' | 'atendimentos' | 'exames' | 'usuarios'>('pacientes');
   const [selectedCdPaciente, setSelectedCdPaciente] = useState<string>('');
 
   // Estados persistentes da busca de pacientes
@@ -50,6 +52,10 @@ function AppContent() {
 
   if (!user) {
     return <Login />;
+  }
+
+  if (mustChangePassword) {
+    return <TrocaSenhaObrigatoria />;
   }
 
   return (
@@ -92,6 +98,19 @@ function AppContent() {
               >
                 Exames
               </Button>
+              {user.perfil === 'ADMIN' && (
+                <Button
+                  type="text"
+                  onClick={() => setCurrentView('usuarios')}
+                  style={{
+                    color: '#fff',
+                    fontWeight: currentView === 'usuarios' ? 700 : 400,
+                    textDecoration: currentView === 'usuarios' ? 'underline' : 'none',
+                  }}
+                >
+                  Usuários
+                </Button>
+              )}
             </Space>
           </Space>
           <Space size="middle">
@@ -127,6 +146,8 @@ function AppContent() {
             />
           ) : currentView === 'exames' ? (
             <ExamePacienteList onBack={handleBack} />
+          ) : currentView === 'usuarios' ? (
+            <UsuariosList />
           ) : (
             <AtendimentoList initialCdPaciente={selectedCdPaciente} onBack={handleBack} />
           )}
@@ -140,7 +161,7 @@ function AppContent() {
         padding: '16px 0',
         fontSize: '13px'
       }}>
-        Anexo Exames · FAV — Fundação Altino Ventura © {new Date().getFullYear()}
+        Anexo Exames © {new Date().getFullYear()}
       </Footer>
     </Layout>
   );

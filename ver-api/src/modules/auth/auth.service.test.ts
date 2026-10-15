@@ -2,15 +2,18 @@ import { AuthService } from './auth.service';
 import { AuthRepository } from './auth.repository';
 import * as crypto from 'crypto';
 import { hashToken } from '../../shared/security/token';
+import { comparePassword, validarPoliticaSenha } from '../../shared/security/password';
 
 // Moca o repositório
 jest.mock('./auth.repository');
 jest.mock('../../shared/security/token', () => ({
   hashToken: jest.fn((token) => `hashed_${token}`),
+  generateRefreshToken: jest.fn(() => 'refresh-token'),
 }));
 jest.mock('../../shared/security/password', () => ({
   hashPassword: jest.fn((senha) => Promise.resolve(`hashed_${senha}`)),
   comparePassword: jest.fn(),
+  validarPoliticaSenha: jest.fn(() => []),
 }));
 
 describe('AuthService - Recuperação de Senha', () => {
@@ -78,6 +81,117 @@ describe('AuthService - Recuperação de Senha', () => {
       expect(mockRepo.updateSenha).toHaveBeenCalledWith(1, 'hashed_novaSenha123!');
       expect(mockRepo.marcarRecuperacaoUsada).toHaveBeenCalledWith(10);
       expect(mockRepo.revogarSessoesUsuario).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('login — troca obrigatória de senha', () => {
+    beforeEach(() => {
+      (comparePassword as unknown as jest.Mock).mockResolvedValue(true);
+      mockRepo.resetarFalhasLogin.mockResolvedValue(undefined);
+    });
+
+    it('emite token de escopo restrito quando a troca é obrigatória', async () => {
+      mockRepo.findByLogin.mockResolvedValue({
+        ID: 1,
+        LOGIN: 'operador',
+        NOME: 'Operador',
+        EMAIL: null,
+        PERFIL: 'OPERADOR',
+        SITUACAO: 'A',
+        SENHA_HASH: 'hash',
+        PRECISA_TROCAR_SENHA: true,
+        SENHA_TEMPORARIA_EXPIRA_EM: new Date(Date.now() + 60_000),
+      } as any);
+
+      const result = await authService.login('operador', 'senhaTemporaria1!');
+
+      expect(result.mustChangePassword).toBe(true);
+      expect(result.refreshToken).toBeUndefined();
+      expect(result.accessToken).toBeDefined();
+      expect(mockRepo.createSessao).not.toHaveBeenCalled();
+    });
+
+    it('recusa login quando a senha temporária expirou', async () => {
+      mockRepo.findByLogin.mockResolvedValue({
+        ID: 1,
+        LOGIN: 'operador',
+        NOME: 'Operador',
+        EMAIL: null,
+        PERFIL: 'OPERADOR',
+        SITUACAO: 'A',
+        SENHA_HASH: 'hash',
+        PRECISA_TROCAR_SENHA: true,
+        SENHA_TEMPORARIA_EXPIRA_EM: new Date(Date.now() - 60_000),
+      } as any);
+
+      await expect(authService.login('operador', 'senhaTemporaria1!'))
+        .rejects.toThrow('Sua senha temporária expirou');
+    });
+
+    it('emite sessão normal quando não há troca obrigatória', async () => {
+      mockRepo.findByLogin.mockResolvedValue({
+        ID: 1,
+        LOGIN: 'operador',
+        NOME: 'Operador',
+        EMAIL: null,
+        PERFIL: 'OPERADOR',
+        SITUACAO: 'A',
+        SENHA_HASH: 'hash',
+        PRECISA_TROCAR_SENHA: false,
+      } as any);
+
+      const result = await authService.login('operador', 'senhaSegura1!');
+
+      expect(result.mustChangePassword).toBeUndefined();
+      expect(result.refreshToken).toBeDefined();
+      expect(mockRepo.createSessao).toHaveBeenCalled();
+    });
+  });
+
+  describe('trocarSenhaObrigatoria', () => {
+    it('recusa quando não há troca pendente', async () => {
+      mockRepo.findById.mockResolvedValue({
+        ID: 1,
+        LOGIN: 'operador',
+        NOME: 'Operador',
+        PRECISA_TROCAR_SENHA: false,
+      } as any);
+
+      await expect(authService.trocarSenhaObrigatoria(1, 'SenhaNova1!'))
+        .rejects.toThrow('Não há troca de senha obrigatória pendente');
+    });
+
+    it('recusa senha que não atende à política', async () => {
+      mockRepo.findById.mockResolvedValue({
+        ID: 1,
+        LOGIN: 'operador',
+        NOME: 'Operador',
+        PRECISA_TROCAR_SENHA: true,
+      } as any);
+      (validarPoliticaSenha as unknown as jest.Mock).mockReturnValue(['A senha deve ter pelo menos 10 caracteres']);
+
+      await expect(authService.trocarSenhaObrigatoria(1, 'fraca'))
+        .rejects.toThrow('A senha deve ter pelo menos 10 caracteres');
+    });
+
+    it('atualiza a senha, revoga sessões e emite sessão normal', async () => {
+      mockRepo.findById.mockResolvedValue({
+        ID: 1,
+        LOGIN: 'operador',
+        NOME: 'Operador',
+        PERFIL: 'OPERADOR',
+        SITUACAO: 'A',
+        PRECISA_TROCAR_SENHA: true,
+      } as any);
+      (validarPoliticaSenha as unknown as jest.Mock).mockReturnValue([]);
+
+      const result = await authService.trocarSenhaObrigatoria(1, 'SenhaNova1!');
+
+      expect(mockRepo.updateSenha).toHaveBeenCalledWith(1, 'hashed_SenhaNova1!');
+      expect(mockRepo.revogarSessoesUsuario).toHaveBeenCalledWith(1);
+      expect(mockRepo.createSessao).toHaveBeenCalled();
+      expect(result.refreshToken).toBeDefined();
+      expect(result.mustChangePassword).toBeUndefined();
     });
   });
 });

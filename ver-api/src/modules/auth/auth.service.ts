@@ -1,5 +1,5 @@
 import { AuthRepository } from './auth.repository';
-import { comparePassword, hashPassword } from '../../shared/security/password';
+import { comparePassword, hashPassword, validarPoliticaSenha } from '../../shared/security/password';
 import { signAccessToken } from '../../shared/security/jwt';
 import { generateRefreshToken, hashToken } from '../../shared/security/token';
 import { config } from '../../shared/config';
@@ -9,7 +9,8 @@ import * as crypto from 'crypto';
 export interface LoginResult {
   user: SafeUser;
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
+  mustChangePassword?: boolean;
 }
 
 interface RequestMeta {
@@ -58,6 +59,31 @@ export class AuthService {
     }
 
     await this.repo.resetarFalhasLogin(usuario.ID);
+
+    // Troca obrigatória de senha: não cria sessão completa, apenas um token
+    // de escopo restrito que permite chamar o endpoint de troca.
+    if (usuario.PRECISA_TROCAR_SENHA) {
+      const expiraEm = usuario.SENHA_TEMPORARIA_EXPIRA_EM
+        ? new Date(usuario.SENHA_TEMPORARIA_EXPIRA_EM)
+        : null;
+      if (expiraEm && expiraEm.getTime() < Date.now()) {
+        await this.repo.log('LOGIN_FALHA', { usuarioId: usuario.ID, detalhe: 'Senha temporária expirada', ...meta });
+        throw new Error('Sua senha temporária expirou. Entre em contato com o administrador.');
+      }
+
+      await this.repo.log('LOGIN_SENHA_TEMPORARIA', { usuarioId: usuario.ID, ...meta });
+
+      const accessToken = signAccessToken({
+        sub: usuario.ID,
+        login: usuario.LOGIN,
+        perfil: usuario.PERFIL,
+        nome: usuario.NOME ?? undefined,
+        scope: 'change_password',
+      });
+
+      return { user: toSafeUser(usuario), accessToken, mustChangePassword: true };
+    }
+
     await this.repo.updateUltimoLogin(usuario.ID);
 
     const refreshToken = generateRefreshToken();
@@ -254,5 +280,49 @@ export class AuthService {
     await this.repo.revogarSessoesUsuario(recuperacao.usuario_id);
     
     await this.repo.log('PASSWORD_RESET', { usuarioId: recuperacao.usuario_id, ...meta });
+  }
+
+  /**
+   * Conclui a troca obrigatória de senha (usuário com credencial de escopo
+   * restrito). Valida a política, limpa a flag e emite uma sessão normal.
+   */
+  async trocarSenhaObrigatoria(userId: number, novaSenha: string, meta: RequestMeta = {}): Promise<LoginResult> {
+    const usuario = await this.repo.findById(userId);
+    if (!usuario) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    if (!usuario.PRECISA_TROCAR_SENHA) {
+      throw new Error('Não há troca de senha obrigatória pendente');
+    }
+
+    const motivos = validarPoliticaSenha(novaSenha, { login: usuario.LOGIN, nome: usuario.NOME });
+    if (motivos.length > 0) {
+      throw new Error(motivos.join(' '));
+    }
+
+    const senhaHash = await hashPassword(novaSenha);
+    await this.repo.updateSenha(usuario.ID, senhaHash);
+    await this.repo.revogarSessoesUsuario(usuario.ID);
+
+    const refreshToken = generateRefreshToken();
+    await this.repo.createSessao({
+      usuarioId: usuario.ID,
+      refreshTokenHash: hashToken(refreshToken),
+      expiraEm: novaExpiracaoRefresh(),
+      ip: meta.ip,
+      userAgent: meta.userAgent,
+    });
+
+    await this.repo.log('PASSWORD_CHANGE', { usuarioId: usuario.ID, ...meta });
+
+    const accessToken = signAccessToken({
+      sub: usuario.ID,
+      login: usuario.LOGIN,
+      perfil: usuario.PERFIL,
+      nome: usuario.NOME ?? undefined,
+    });
+
+    return { user: toSafeUser(usuario), accessToken, refreshToken };
   }
 }

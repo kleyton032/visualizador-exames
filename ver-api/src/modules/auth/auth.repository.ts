@@ -5,7 +5,9 @@ import { Perfil, Sessao, Usuario } from './auth.types';
 const USER_COLUMNS = `
   id AS "ID", login AS "LOGIN", senha_hash AS "SENHA_HASH",
   nome AS "NOME", email AS "EMAIL", perfil AS "PERFIL",
-  situacao AS "SITUACAO", ultimo_login AS "ULTIMO_LOGIN"
+  situacao AS "SITUACAO", ultimo_login AS "ULTIMO_LOGIN",
+  precisa_trocar_senha AS "PRECISA_TROCAR_SENHA",
+  senha_temporaria_expira_em AS "SENHA_TEMPORARIA_EXPIRA_EM"
 `;
 
 export class AuthRepository {
@@ -149,7 +151,37 @@ export class AuthRepository {
     await this.db.query(`UPDATE auth_recuperacao_senha SET usado = TRUE WHERE id = $1`, [id]);
   }
 
+  /**
+   * Atualiza a senha e encerra o ciclo de troca obrigatória.
+   * Qualquer troca efetiva de senha (por e-mail ou obrigatória) limpa a flag
+   * e a expiração da senha temporária.
+   */
   async updateSenha(usuarioId: number, senhaHash: string): Promise<void> {
-    await this.db.query(`UPDATE app_usuarios SET senha_hash = $1, atualizado_em = now() WHERE id = $2`, [senhaHash, usuarioId]);
+    await this.db.query(
+      `UPDATE app_usuarios
+          SET senha_hash = $1,
+              precisa_trocar_senha = FALSE,
+              senha_temporaria_expira_em = NULL,
+              senha_alterada_em = now(),
+              atualizado_em = now()
+        WHERE id = $2`,
+      [senhaHash, usuarioId],
+    );
+  }
+
+  /**
+   * Define uma senha temporária gerada pelo administrador e marca a troca
+   * obrigatória no próximo login. A senha é armazenada somente como hash.
+   */
+  async definirSenhaTemporaria(usuarioId: number, senhaHash: string, expiraEm: Date): Promise<void> {
+    await this.db.query(
+      `UPDATE app_usuarios
+          SET senha_hash = $1,
+              precisa_trocar_senha = TRUE,
+              senha_temporaria_expira_em = $3,
+              atualizado_em = now()
+        WHERE id = $2`,
+      [senhaHash, usuarioId, expiraEm],
+    );
   }
 }

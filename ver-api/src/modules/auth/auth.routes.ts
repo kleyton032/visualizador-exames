@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from './auth.controller';
-import { authMiddleware } from '../../shared/middlewares/auth.middleware';
+import { authMiddleware, passwordChangeMiddleware } from '../../shared/middlewares/auth.middleware';
 import { loginLimiter } from '../../shared/middlewares/rateLimiter';
 import { requireRole } from '../../shared/middlewares/rbac.middleware';
 
@@ -17,5 +17,8 @@ router.post('/users', authMiddleware, requireRole('ADMIN'), controller.createUse
 // Rotas de Recuperação de Senha
 router.post('/forgot-password', controller.forgotPassword);
 router.post('/reset-password', controller.resetPassword);
+
+// Troca obrigatória de senha (token de escopo restrito emitido no login)
+router.post('/trocar-senha-obrigatoria', passwordChangeMiddleware, controller.trocarSenhaObrigatoria);
 
 export default router;

@@ -9,6 +9,7 @@ import atendimentoRoutes from './modules/atendimentos/atendimento.routes';
 import anexoRoutes from './modules/anexos/anexo.routes';
 import pacienteRoutes from './modules/pacientes/paciente.routes';
 import authRoutes from './modules/auth/auth.routes';
+import usuariosRoutes from './modules/usuarios/usuarios.routes';
 
 import { authMiddleware } from './shared/middlewares/auth.middleware';
 import { errorHandler } from './shared/middlewares/errorHandler';
@@ -35,6 +36,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/atendimentos', authMiddleware, atendimentoRoutes);
 app.use('/api/pacientes', authMiddleware, pacienteRoutes);
 app.use('/api/anexos', anexoRoutes); // proteção individual em cada rota
+app.use('/api/usuarios', usuariosRoutes); // proteção (auth + ADMIN) dentro do módulo
 
 app.use(errorHandler);
 
