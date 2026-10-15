@@ -5,7 +5,7 @@ import { useAuth } from '../../../../shared/auth/AuthContext';
 import ForgotPassword from '../ForgotPassword/ForgotPassword';
 import MedicoCadastro from '../MedicoCadastro/MedicoCadastro';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const Login: React.FC = () => {
     const { login } = useAuth();
@@ -54,9 +54,7 @@ const Login: React.FC = () => {
             padding: 16,
         }}>
             <Card style={{ width: 380, boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}>
-                <Title level={3} style={{ textAlign: 'center', marginBottom: 4 }}>
-                    Anexo Exames
-                </Title>
+                <img src="/logo.png" alt="VISUALE" style={{ display: 'block', margin: '0 auto 16px', height: 72 }} />
                 <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginBottom: 24 }}>
                     Acesse com suas credenciais
                 </Text>

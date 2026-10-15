@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Avatar, Button, ConfigProvider, Layout, Space, theme, Typography, App } from 'antd';
-import { FileSearchOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import AtendimentoList from './modules/atendimentos/pages/AtendimentoList/AtendimentoList';
 import PacienteList from './modules/pacientes/pages/PacienteList/PacienteList';
 import ExamePacienteList from './modules/anexos/pages/ExamePacienteList/ExamePacienteList';
@@ -70,68 +70,64 @@ function AppContent() {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Header style={{
-        background: 'linear-gradient(90deg, #4096ff 0%, #69b1ff 100%)',
+        background: '#ffffff',
         height: '64px',
         display: 'flex',
         alignItems: 'center',
         padding: '0 32px',
-        boxShadow: '0 2px 10px rgba(64, 150, 255, 0.25)',
+        borderBottom: '1px solid #f0f0f0',
+        boxShadow: '0 1px 4px rgba(0, 0, 0, 0.06)',
         zIndex: 1
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-          <Space size={24}>
-            <Space size={10}>
-              <FileSearchOutlined style={{ color: '#fff', fontSize: 24 }} />
-              <Text style={{ color: '#fff', fontSize: 20, fontWeight: 600 }}>Anexo Exames</Text>
-            </Space>
-            <Space size={4}>
-              {!ehMedico && (
-                <Button
-                  type="text"
-                  onClick={() => { setCurrentView('pacientes'); setSelectedCdPaciente(''); }}
-                  style={{
-                    color: '#fff',
-                    fontWeight: currentView === 'pacientes' ? 700 : 400,
-                    textDecoration: currentView === 'pacientes' ? 'underline' : 'none',
-                  }}
-                >
-                  Pacientes
-                </Button>
-              )}
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+          <img src="/logo.png" alt="VISUALE" style={{ height: 40, display: 'block' }} />
+          <Space size={4} style={{ flex: 1, justifyContent: 'flex-start', marginLeft: 24 }}>
+            {!ehMedico && (
               <Button
                 type="text"
-                onClick={() => setCurrentView('exames')}
+                onClick={() => { setCurrentView('pacientes'); setSelectedCdPaciente(''); }}
                 style={{
-                  color: '#fff',
-                  fontWeight: currentView === 'exames' ? 700 : 400,
-                  textDecoration: currentView === 'exames' ? 'underline' : 'none',
+                  color: currentView === 'pacientes' ? PRIMARY : '#595959',
+                  fontWeight: currentView === 'pacientes' ? 700 : 400,
+                  textDecoration: currentView === 'pacientes' ? 'underline' : 'none',
                 }}
               >
-                Exames
+                Pacientes
               </Button>
-              {user.perfil === 'ADMIN' && (
-                <Button
-                  type="text"
-                  onClick={() => setCurrentView('usuarios')}
-                  style={{
-                    color: '#fff',
-                    fontWeight: currentView === 'usuarios' ? 700 : 400,
-                    textDecoration: currentView === 'usuarios' ? 'underline' : 'none',
-                  }}
-                >
-                  Usuários
-                </Button>
-              )}
-            </Space>
+            )}
+            <Button
+              type="text"
+              onClick={() => setCurrentView('exames')}
+              style={{
+                color: currentView === 'exames' ? PRIMARY : '#595959',
+                fontWeight: currentView === 'exames' ? 700 : 400,
+                textDecoration: currentView === 'exames' ? 'underline' : 'none',
+              }}
+            >
+              Exames
+            </Button>
+            {user.perfil === 'ADMIN' && (
+              <Button
+                type="text"
+                onClick={() => setCurrentView('usuarios')}
+                style={{
+                  color: currentView === 'usuarios' ? PRIMARY : '#595959',
+                  fontWeight: currentView === 'usuarios' ? 700 : 400,
+                  textDecoration: currentView === 'usuarios' ? 'underline' : 'none',
+                }}
+              >
+                Usuários
+              </Button>
+            )}
           </Space>
           <Space size="middle">
             <Space size={8}>
-              <Avatar size="small" style={{ backgroundColor: 'rgba(255,255,255,0.3)' }} icon={<UserOutlined />} />
-              <Text style={{ color: '#fff' }}>
-                {user.nome || user.login} <Text style={{ color: 'rgba(255,255,255,0.75)' }}>· {user.perfil}</Text>
+              <Avatar size="small" style={{ backgroundColor: 'rgba(64, 150, 255, 0.15)', color: PRIMARY }} icon={<UserOutlined />} />
+              <Text style={{ color: '#1f1f1f' }}>
+                {user.nome || user.login} <Text style={{ color: '#8c8c8c' }}>· {user.perfil}</Text>
               </Text>
             </Space>
-            <Button ghost icon={<LogoutOutlined />} onClick={logout} size="small">
+            <Button type="text" icon={<LogoutOutlined />} onClick={logout} size="small" style={{ color: PRIMARY }}>
               Sair
             </Button>
           </Space>
@@ -172,7 +168,7 @@ function AppContent() {
         padding: '16px 0',
         fontSize: '13px'
       }}>
-        Anexo Exames © {new Date().getFullYear()}
+        VISUALE © {new Date().getFullYear()}
       </Footer>
     </Layout>
   );
