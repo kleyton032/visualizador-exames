@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Avatar, Button, ConfigProvider, Layout, Space, theme, Typography, App } from 'antd';
 import { FileSearchOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import AtendimentoList from './modules/atendimentos/pages/AtendimentoList/AtendimentoList';
@@ -26,6 +26,13 @@ function AppContent() {
   const [pacienteData, setPacienteData] = useState<Paciente[]>([]);
   const [pacienteFilters, setPacienteFilters] = useState({ cd_paciente: '', nm_paciente: '' });
   const [pacienteHasSearched, setPacienteHasSearched] = useState(false);
+
+  // Médicos (autocadastro) acessam somente a tela de exames.
+  useEffect(() => {
+    if (user?.perfil === 'MEDICO' && currentView === 'pacientes') {
+      setCurrentView('exames');
+    }
+  }, [user, currentView]);
 
   // Tratamento da rota de "Redefinir senha" (como não há react-router, verificamos direto)
   if (window.location.pathname === '/reset-password') {
@@ -58,6 +65,8 @@ function AppContent() {
     return <TrocaSenhaObrigatoria />;
   }
 
+  const ehMedico = user.perfil === 'MEDICO';
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Header style={{
@@ -76,17 +85,19 @@ function AppContent() {
               <Text style={{ color: '#fff', fontSize: 20, fontWeight: 600 }}>Anexo Exames</Text>
             </Space>
             <Space size={4}>
-              <Button
-                type="text"
-                onClick={() => { setCurrentView('pacientes'); setSelectedCdPaciente(''); }}
-                style={{
-                  color: '#fff',
-                  fontWeight: currentView === 'pacientes' ? 700 : 400,
-                  textDecoration: currentView === 'pacientes' ? 'underline' : 'none',
-                }}
-              >
-                Pacientes
-              </Button>
+              {!ehMedico && (
+                <Button
+                  type="text"
+                  onClick={() => { setCurrentView('pacientes'); setSelectedCdPaciente(''); }}
+                  style={{
+                    color: '#fff',
+                    fontWeight: currentView === 'pacientes' ? 700 : 400,
+                    textDecoration: currentView === 'pacientes' ? 'underline' : 'none',
+                  }}
+                >
+                  Pacientes
+                </Button>
+              )}
               <Button
                 type="text"
                 onClick={() => setCurrentView('exames')}
@@ -145,7 +156,7 @@ function AppContent() {
               setHasSearched={setPacienteHasSearched}
             />
           ) : currentView === 'exames' ? (
-            <ExamePacienteList onBack={handleBack} />
+            <ExamePacienteList onBack={ehMedico ? undefined : handleBack} />
           ) : currentView === 'usuarios' ? (
             <UsuariosList />
           ) : (

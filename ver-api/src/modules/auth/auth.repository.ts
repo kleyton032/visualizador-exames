@@ -37,6 +37,22 @@ export class AuthRepository {
     return result.rows[0];
   }
 
+  async findByCpf(cpf: string): Promise<Usuario | undefined> {
+    const result = await this.db.query<Usuario>(
+      `SELECT ${USER_COLUMNS} FROM app_usuarios WHERE cpf = $1`,
+      [cpf],
+    );
+    return result.rows[0];
+  }
+
+  async findByCdPrestador(cdPrestador: number): Promise<Usuario | undefined> {
+    const result = await this.db.query<Usuario>(
+      `SELECT ${USER_COLUMNS} FROM app_usuarios WHERE cd_prestador = $1`,
+      [cdPrestador],
+    );
+    return result.rows[0];
+  }
+
   async createUsuario(input: {
     login: string;
     senhaHash: string;
@@ -50,6 +66,27 @@ export class AuthRepository {
        VALUES ($1, $2, $3, $4, $5, 'A', 0, now(), now())
        RETURNING id`,
       [input.login, input.senhaHash, input.nome, input.email, input.perfil],
+    );
+    return Number(result.rows[0].id);
+  }
+
+  /** Cria uma conta de médico originada do autocadastro (perfil MEDICO + vínculo MV). */
+  async createUsuarioMedico(input: {
+    login: string;
+    senhaHash: string;
+    nome: string | null;
+    email: string | null;
+    cpf: string;
+    cdPrestador: number;
+    cdUsuarioMv: number | null;
+  }): Promise<number> {
+    const result = await this.db.query<{ id: string | number }>(
+      `INSERT INTO app_usuarios
+          (login, senha_hash, nome, email, perfil, situacao, falhas_login,
+           cpf, cd_prestador, cd_usuario_mv, origem, criado_em, atualizado_em)
+       VALUES ($1, $2, $3, $4, 'MEDICO', 'A', 0, $5, $6, $7, 'AUTOCADASTRO', now(), now())
+       RETURNING id`,
+      [input.login, input.senhaHash, input.nome, input.email, input.cpf, input.cdPrestador, input.cdUsuarioMv],
     );
     return Number(result.rows[0].id);
   }

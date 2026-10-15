@@ -17,3 +17,12 @@ export const passwordResetLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Muitas solicitações. Tente novamente em instantes.' },
 });
+
+/** Limita as etapas públicas do autocadastro de médicos por IP. */
+export const medicoCadastroLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minuto
+  max: 15, // 15 operações por IP por minuto
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Muitas solicitações. Tente novamente em instantes.' },
+});

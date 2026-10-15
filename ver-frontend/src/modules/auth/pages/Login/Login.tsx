@@ -3,6 +3,7 @@ import { App, Button, Card, Form, Input, Typography } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { useAuth } from '../../../../shared/auth/AuthContext';
 import ForgotPassword from '../ForgotPassword/ForgotPassword';
+import MedicoCadastro from '../MedicoCadastro/MedicoCadastro';
 
 const { Title, Text } = Typography;
 
@@ -11,6 +12,7 @@ const Login: React.FC = () => {
     const { message } = App.useApp();
     const [loading, setLoading] = useState(false);
     const [showForgot, setShowForgot] = useState(false);
+    const [showCadastro, setShowCadastro] = useState(false);
 
     const onFinish = async (values: { login: string; senha: string }) => {
         setLoading(true);
@@ -36,6 +38,10 @@ const Login: React.FC = () => {
                 <ForgotPassword onBack={() => setShowForgot(false)} />
             </div>
         );
+    }
+
+    if (showCadastro) {
+        return <MedicoCadastro onBack={() => setShowCadastro(false)} />;
     }
 
     return (
@@ -81,7 +87,10 @@ const Login: React.FC = () => {
                         />
                     </Form.Item>
                     
-                    <div style={{ textAlign: 'right', marginBottom: 24 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+                        <Button type="link" onClick={() => setShowCadastro(true)} style={{ padding: 0 }}>
+                            Primeiro acesso? Cadastre-se
+                        </Button>
                         <Button type="link" onClick={() => setShowForgot(true)} style={{ padding: 0 }}>
                             Esqueci minha senha
                         </Button>

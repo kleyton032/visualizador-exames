@@ -37,6 +37,13 @@ export const config = {
   compressionMinBytes: Number(process.env.COMPRESSION_MIN_BYTES || 500000),
   imageQuality: Number(process.env.IMAGE_QUALITY || 80),
   pdfSettings: process.env.PDF_SETTINGS || '/screen',
+
+  // Códigos de tipo de prestador (Oracle MV) que representam "médico".
+  // Lista separada por vírgula, ex.: MEDICO_CD_TIP_PRESTA=1,2,3
+  medicoCdTipPresta: (process.env.MEDICO_CD_TIP_PRESTA || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
 };
 
 export const ACCESS_TOKEN_COOKIE = 'access_token';

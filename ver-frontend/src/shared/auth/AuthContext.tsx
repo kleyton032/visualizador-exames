@@ -7,6 +7,7 @@ interface AuthContextValue {
     mustChangePassword: boolean;
     login: (login: string, senha: string) => Promise<void>;
     changePassword: (novaSenha: string) => Promise<void>;
+    finishSignup: (user: AuthUser) => void;
     logout: () => Promise<void>;
 }
 
@@ -52,6 +53,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(u);
     };
 
+    const finishSignup = (u: AuthUser) => {
+        setMustChangePassword(false);
+        setUser(u);
+    };
+
     const logout = async () => {
         try {
             await AuthService.logout();
@@ -63,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, mustChangePassword, login, changePassword, logout }}>
+        <AuthContext.Provider value={{ user, loading, mustChangePassword, login, changePassword, finishSignup, logout }}>
             {children}
         </AuthContext.Provider>
     );

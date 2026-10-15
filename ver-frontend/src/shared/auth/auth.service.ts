@@ -13,6 +13,12 @@ export interface LoginResult {
     mustChangePassword: boolean;
 }
 
+export interface IniciarCadastroResultado {
+    token: string;
+    nome: string;
+    onepassIntegrado: boolean;
+}
+
 export class AuthService {
     static async login(login: string, senha: string): Promise<LoginResult> {
         const res = await apiRequest<{ user: AuthUser; mustChangePassword?: boolean }>('/auth/login', {
@@ -40,6 +46,31 @@ export class AuthService {
         const res = await apiRequest<{ user: AuthUser }>('/auth/trocar-senha-obrigatoria', {
             method: 'POST',
             body: JSON.stringify({ novaSenha }),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        return res.user;
+    }
+
+    static async iniciarCadastroMedico(cpf: string, dataNascimento: string): Promise<IniciarCadastroResultado> {
+        return apiRequest<IniciarCadastroResultado>('/auth/medico/iniciar-cadastro', {
+            method: 'POST',
+            body: JSON.stringify({ cpf, dataNascimento }),
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    static async enviarCodigoEmailMedico(token: string, email: string, senha: string, confirmacao: string): Promise<void> {
+        await apiRequest<{ message: string }>('/auth/medico/enviar-codigo-email', {
+            method: 'POST',
+            body: JSON.stringify({ token, email, senha, confirmacao }),
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    static async concluirCadastroMedico(token: string, codigo: string): Promise<AuthUser> {
+        const res = await apiRequest<{ user: AuthUser }>('/auth/medico/concluir-cadastro', {
+            method: 'POST',
+            body: JSON.stringify({ token, codigo }),
             headers: { 'Content-Type': 'application/json' },
         });
         return res.user;

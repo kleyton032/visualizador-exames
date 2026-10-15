@@ -39,7 +39,17 @@ export class AuthService {
 
   async login(login: string, senha: string, meta: RequestMeta = {}): Promise<LoginResult> {
     const loginNormalizado = (login || '').trim();
-    const usuario = await this.repo.findByLogin(loginNormalizado);
+    const temDigitos = /\d/.test(loginNormalizado);
+    const cpfDigitos = loginNormalizado.replace(/\D/g, '');
+
+    // Médicos podem entrar por CPF (com ou sem máscara) ou por e-mail.
+    let usuario = await this.repo.findByLogin(loginNormalizado);
+    if (!usuario && temDigitos && cpfDigitos !== loginNormalizado) {
+      usuario = await this.repo.findByLogin(cpfDigitos);
+    }
+    if (!usuario) {
+      usuario = await this.repo.findByEmail(loginNormalizado);
+    }
 
     if (!usuario) {
       await this.repo.log('LOGIN_FALHA', { detalhe: `Usuário inexistente: ${loginNormalizado}`, ...meta });

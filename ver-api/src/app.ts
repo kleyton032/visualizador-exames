@@ -10,6 +10,7 @@ import anexoRoutes from './modules/anexos/anexo.routes';
 import pacienteRoutes from './modules/pacientes/paciente.routes';
 import authRoutes from './modules/auth/auth.routes';
 import usuariosRoutes from './modules/usuarios/usuarios.routes';
+import medicoRoutes from './modules/medico/medico.routes';
 
 import { authMiddleware } from './shared/middlewares/auth.middleware';
 import { errorHandler } from './shared/middlewares/errorHandler';
@@ -31,6 +32,7 @@ app.use(cookieParser());
 
 // Rotas públicas de autenticação
 app.use('/api/auth', authRoutes);
+app.use('/api/auth/medico', medicoRoutes);
 
 // Rotas protegidas
 app.use('/api/atendimentos', authMiddleware, atendimentoRoutes);
